@@ -1,5 +1,23 @@
-file = open('The Beast.txt', 'r')
+
+def words_from_file(filepath):
+
+    words = []
+
+    with open(filepath, 'r') as file:
+        for line in file:
+            for word in line.split():
+                words.append(word)
+
+    return list(set(words))
+
+print words_from_file('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/p9000/p9000_000.txt')
+
+exit(1)
+
+file = open('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/p9000/p9000_000.txt', 'r')
 book = file.read()
+
+
 
 
 def tokenize():
