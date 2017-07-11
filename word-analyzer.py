@@ -1,16 +1,31 @@
+import os
 
 def words_from_file(filepath):
-
     words = []
 
     with open(filepath, 'r') as file:
         for line in file:
-            for word in line.split():
-                words.append(word)
+            words = list(set(words + line.split()))   # Add only the unique words from each line
 
-    return list(set(words))
+    return words
 
-print words_from_file('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/p9000/p9000_000.txt')
+def words_from_directory(directorypath, verbose=False):
+    allwords = []
+
+    for root, dirs, files in os.walk(directorypath):
+        for filename in files:
+            
+            filepath = os.path.join(root, filename)
+
+            if verbose:
+                print(filepath)
+
+            allwords = list(set(allwords + words_from_file(filepath)))   # Add only the unique words from each file
+
+    return allwords
+
+#print words_from_file('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/p9000/p9000_000.txt')
+print words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/', True)
 
 exit(1)
 
