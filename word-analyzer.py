@@ -1,6 +1,6 @@
 import os
 
-def words_from_file(filepath, unique):
+def words_from_file(filepath):
     words = []
 
     with open(filepath, 'r') as file:
@@ -12,7 +12,7 @@ def words_from_file(filepath, unique):
 
     return words
 
-def words_from_directory(directorypath, unique):
+def words_from_directory(directorypath):
     allwords = []
 
     for root, dirs, files in os.walk(directorypath):
@@ -30,33 +30,8 @@ def words_from_directory(directorypath, unique):
     return allwords
 
 
-# A list of every unique word from the directory tree
-distinctWords = words_from_directory(
-    '../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/', True)
-
-# A list of every word from the directory tree
-totalityWords = words_from_directory(
-    '../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/', False)
-
-
-wordFrequencies = []
-maxWordLength = len(distinctWords[0])   # The length of the longest word
-wordsCounted = 0
-
-for unique in distinctWords:
-
-    frequency = 0
-    for word in totalityWords:
-        if word == unique:
-            frequency += 1
-            totalityWords.remove(word)
-    wordFrequencies.append((unique, frequency))   # The word associated with the number of times it was found
-
-    if len(unique) > maxWordLength:
-        maxWordLength = len(unique)
-    wordsCounted += 1
-    print(unique + (" " * (maxWordLength - len(unique) + 3)) + str(frequency) + (" " * (10 - len(str(frequency)))) + str(wordsCounted) + "/" + str(len(distinctWords)))
+wordFrequencies = words_from_file('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/', True)
 
 with open('word-frequencies.txt', 'w') as output:
     for word, frequency in wordFrequencies:
-        output.write(word + (" " * (maxWordLength - len(word) + 1)) + str(frequency) + "\n")
+        output.write(word + " " + str(frequency) + "\n")
