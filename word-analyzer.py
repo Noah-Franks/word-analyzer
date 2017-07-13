@@ -1,5 +1,27 @@
 import os
 
+# words data structure:
+#
+# words
+#     word
+#          total frequency              The number of times a word is present in a set of files
+#          file frequency               The number of different files a word is present in
+#          dispositions                 The outcome of the phone call
+#               disposition             The choice selected by an agent
+#                    frequency          The number of times a word is in a file with a given disposition
+#          ...
+#     ...
+
+def print_dictionary(dictionary, tabs=0):
+    for key in dictionary:
+        if isinstance(dictionary[key], dict):
+            print("\t" * tabs + str(key))
+            print_dictionary(dictionary[key], tabs + 1)
+        else:
+            print("\t" * tabs       + str(key))
+            print("\t" * (tabs + 1) + str(dictionary[key]))
+
+
 def words_from_file(filepath):
     words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
 
@@ -11,11 +33,15 @@ def words_from_file(filepath):
 
                 if word not in words:
                     words[word] = {}
-                if disposition not in words[word]:
-                    words[word][disposition] = 0
+                    words[word]['dispositions']    = {}
+                    words[word]['total frequency'] = 0
+                    words[word]['file frequency']  = 1
 
-                words[word][disposition] += 1
-                
+                if disposition not in words[word]['dispositions']:
+                    words[word]['dispositions'][disposition] = 0
+
+                words[word]['dispositions'][disposition] += 1
+                words[word]['total frequency']           += 1
 
     return words
 
@@ -30,19 +56,23 @@ def words_from_directory(directorypath):
 
             filewords = words_from_file(filepath)
             
-            for word, disposition_dict in filewords.items():
+            for word, meta_dict in filewords.items():
 
                 if word not in allwords:
-                    allwords[word] = {}
-                    allwords[word]['total'] = 0
+                    allwords[word]                    = {}
+                    allwords[word]['dispositions']    = {}
+                    allwords[word]['total frequency'] = 0
+                    allwords[word]['file frequency']  = 0
 
-                for disposition, frequency in disposition_dict.items():
+                allwords[word]['file frequency']  += meta_dict['file frequency']    # This should always be 1
+                allwords[word]['total frequency'] += meta_dict['total frequency']   # Adding the frequency of the word in the file
 
-                    if disposition not in allwords[word]:
-                        allwords[word][disposition] = 0
+                for disposition, frequency in meta_dict['dispositions'].items():
+
+                    if disposition not in allwords[word]['dispositions']:
+                        allwords[word]['dispositions'][disposition] = 0
                 
-                    allwords[word][disposition] += 1
-                    allwords[word]['total']     += 1
+                    allwords[word]['dispositions'][disposition] += frequency
 
 
     return allwords
@@ -50,10 +80,10 @@ def words_from_directory(directorypath):
 
 #wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
-print(wordFrequencies)
-
+print_dictionary(wordFrequencies)
+'''
 with open('word-frequencies.txt', 'w') as output:
     for word, disposition_dict in wordFrequencies.items():
         output.write(word + "\n")
         for disposition, frequency in disposition_dict.items():
-            output.write("\t" + disposition + " " + str(frequency) + "\n")
+            output.write("\t" + disposition + " " + str(frequency) + "\n")'''
