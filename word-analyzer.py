@@ -34,6 +34,7 @@ def words_from_directory(directorypath):
 
                 if word not in allwords:
                     allwords[word] = {}
+                    allwords[word]['total'] = 0
 
                 for disposition, frequency in disposition_dict.items():
 
@@ -41,12 +42,13 @@ def words_from_directory(directorypath):
                         allwords[word][disposition] = 0
                 
                     allwords[word][disposition] += 1
+                    allwords[word]['total']     += 1
 
 
     return allwords
 
 
-#wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')\
+#wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
 print(wordFrequencies)
 
