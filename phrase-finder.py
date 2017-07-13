@@ -1,20 +1,32 @@
 import os
 
-data = {}
 
-with open('word-frequencies.txt', 'r') as source:
-	
 
-	for line in source:
+def load_from_file(filepath):   # loads the output of word-analyzer into memory
+	data = {}
 
-		if line.find('\t') >= 0:
+	with open(filepath, 'r') as source:
+		
+		for line in source:
 
-			disposition =     line[: line.find(' ')      ]
-			frequency   = int(line[  line.find(' ') + 1 :])
+			if line.find('\t') >= 0:
 
-			print(disposition + str(frequency))
+				disposition =     line[: line.find(' ')      ]
+				frequency   = int(line[  line.find(' ') + 1 :])
 
-		else:
-			word = line[:line.find('\n')]
-			print(word)
-			data[line] = {}
+				data[word][disposition] = frequency
+
+			else:
+				word = line[:line.find('\n')]
+				data[word] = {}
+
+	return data
+
+
+data = load_from_file('word-frequencies.txt')
+
+
+for word, disposition_dict in data.items():
+	print(word)
+	for disposition, frequency in disposition_dict.items():
+		print("\t" + disposition + " " + str(frequency))
