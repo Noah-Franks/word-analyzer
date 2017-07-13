@@ -58,6 +58,6 @@ for unique in distinctWords:
     wordsCounted += 1
     print(unique + (" " * (maxWordLength - len(unique) + 3)) + str(frequency) + (" " * (10 - len(str(frequency)))) + str(wordsCounted) + "/" + str(len(distinctWords)))
 
-with open('word-frequencies.txt', 'w') as output:
+with open('word-frequencies-list.txt', 'w') as output:
     for word, frequency in wordFrequencies:
         output.write(word + (" " * (maxWordLength - len(word) + 1)) + str(frequency) + "\n")
