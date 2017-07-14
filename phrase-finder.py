@@ -3,22 +3,16 @@ import os
 
 
 def load_from_file(filepath):   # loads the output of word-analyzer into memory
-	data = {}
+	data = None
 
+	read_string = ''
 	with open(filepath, 'r') as source:
-		
 		for line in source:
+			read_string += line
 
-			if line.find('\t') >= 0:
-
-				disposition =     line[line.find('\t') + 1 : line.find(' ')      ]
-				frequency   = int(line[  line.find(' ') + 1 :])
-
-				data[word][disposition] = frequency
-
-			else:
-				word = line[:line.find('\n')]
-				data[word] = {}
+	print (read_string)
+	data = dict(read_string)
+		
 
 	return data
 
@@ -42,4 +36,5 @@ def prune_data_by_percentage(data, limit_percentage):   # shortens the amount of
 
 
 data = load_from_file('word-frequencies.txt')
-prune_data_by_percentage(data, 1.0)
+print(data)
+#prune_data_by_percentage(data, 1.0)

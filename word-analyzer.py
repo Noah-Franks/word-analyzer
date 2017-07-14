@@ -1,4 +1,5 @@
 import os
+import pickle
 
 # words data structure:
 #
@@ -24,8 +25,8 @@ def print_dictionary(dictionary, tabs=0):
 def write_dictionary(dictionary, formatted=True):
 
     if not formatted:
-        with open('word-frequencies.txt', 'w') as outputfile:
-            outputfile.write(str(dictionary))
+        
+        pickle.dump(dictionary, open('word-frequencies.txt', 'wb'), -1)
         return
 
     def dictToString(dictionary, spaces=0):
