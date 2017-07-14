@@ -15,7 +15,7 @@ import pickle
 
 
 def load_from_file(filepath):   # loads the output of word-analyzer into memory
-	return pickle.load(open("word-frequencies.txt", "rb"))
+	return pickle.load(open(filepath, "rb"))
 
 def print_dictionary(dictionary, tabs=0):
     for key in dictionary:
@@ -26,19 +26,29 @@ def print_dictionary(dictionary, tabs=0):
             print("\t" * tabs       + str(key))
             print("\t" * (tabs + 1) + str(dictionary[key]))
 
-
-def prune_data_by_percentage(data, limit_percentage):   # shortens the amount of data to work with by eliminating rare words
-
-	total_words = 0   # The total number of words in the data as the sum of frequencies
-
-	for word, disposition_dict in data.items():
-		total_words += disposition_dict['total']
+def prune_data_by_percentage(data, meta, limit_percentage):   # shortens the amount of data to work with by eliminating rare words
 	
-	for word, disposition_dict in data.items():
-		frequency_percentage = disposition_dict['total'] / total_words
-		print(frequency_percentage)
+	pruned_data = dict(data)
+
+	for word, root_dict in data.items():
+		frequency_percentage = root_dict['file frequency'] / meta['file count'] * 100
+		if frequency_percentage > limit_percentage:
+			pass
+			#print("%s\t%s" % (word, frequency_percentage))
+		else:
+			del pruned_data[word]
+
+	return data
+
+
+def find_word_success(data):
+
+	for word, root_dict in data.items():
+		for disposition in root_dict['dispositions']:
+			print("%s\t%s\t%s" % (word, disposition, root_dict['dispositions'][disposition] / root_dict['total frequency']))
 
 
 words = load_from_file('word-frequencies.txt')
-print(words)
-#prune_data_by_percentage(data, 1.0)
+meta  = load_from_file('meta.txt')
+words = prune_data_by_percentage(words, meta, 10.0)   # Remove the lower-frequency words to improve the analysis
+words = find_word_success(words)

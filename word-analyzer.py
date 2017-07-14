@@ -1,4 +1,5 @@
 import os
+import re as re
 import pickle
 
 # words data structure:
@@ -22,11 +23,10 @@ def print_dictionary(dictionary, tabs=0):
             print("\t" * tabs       + str(key))
             print("\t" * (tabs + 1) + str(dictionary[key]))
 
-def write_dictionary(dictionary, formatted=True):
+def write_dictionary(dictionary, path, formatted=True):
 
     if not formatted:
-        
-        pickle.dump(dictionary, open('word-frequencies.txt', 'wb'), -1)
+        pickle.dump(dictionary, open(path, 'wb'), -1)
         return
 
     def dictToString(dictionary, spaces=0):
@@ -42,7 +42,7 @@ def write_dictionary(dictionary, formatted=True):
 
     writeString = dictToString(dictionary)
 
-    with open('word-frequencies.txt', 'w') as outputfile:
+    with open(path, 'w') as outputfile:
         outputfile.write(writeString)
 
 
@@ -53,6 +53,7 @@ def words_from_file(filepath):
 
     with open(filepath, 'r') as file:
         for line in file:
+            line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
             for word in line.split():
 
                 if word not in words:
@@ -98,10 +99,22 @@ def words_from_directory(directorypath):
                 
                     allwords[word]['dispositions'][disposition] += frequency
 
-
     return allwords
+
+def meta_from_directory(directorypath):
+    meta = {}
+    meta['file count'] = 0
+
+    for root, dirs, files in os.walk(directorypath):
+        for filename in files:
+            meta['file count'] += 1
+
+    return meta
 
 
 #wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
-write_dictionary(wordFrequencies, False)
+metaData = meta_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
+write_dictionary(wordFrequencies, 'word-frequencies.txt', False)
+write_dictionary(wordFrequencies, 'word-frequencies-human.txt', True)
+write_dictionary(metaData, 'meta.txt', False)
