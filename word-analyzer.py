@@ -21,15 +21,24 @@ def print_dictionary(dictionary, tabs=0):
             print("\t" * tabs       + str(key))
             print("\t" * (tabs + 1) + str(dictionary[key]))
 
-def write_dictionary(dictionary, tabs=0):
-    with open('word-frequencies.txt', 'w') as output:
+def write_dictionary(dictionary):
+
+    
+    def dictToString(dictionary, spaces=0):
+        writeString = ''
         for key in dictionary:
             if isinstance(dictionary[key], dict):
-                output.write(" " * tabs + str(key) + "\n")
-                write_dictionary(dictionary[key], tabs + 1)
+                writeString += " " * spaces + str(key) + "\n"
+                writeString += dictToString(dictionary[key], spaces + 1)
             else:
-                output.write(" " * tabs       + str(key) + "\n")
-                output.write(" " * (tabs + 1) + str(dictionary[key]) + "\n")
+                writeString += " " * spaces       + str(key) + "\n"
+                writeString += " " * (spaces + 1) + str(dictionary[key]) + "\n"
+        return writeString
+
+    writeString = dictToString(dictionary)
+
+    with open('word-frequencies.txt', 'w') as outputfile:
+        outputfile.write(writeString)
 
 def words_from_file(filepath):
     words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
@@ -89,11 +98,5 @@ def words_from_directory(directorypath):
 
 #wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
-print_dictionary(wordFrequencies)
 write_dictionary(wordFrequencies)
-'''
-with open('word-frequencies.txt', 'w') as output:
-    for word, disposition_dict in wordFrequencies.items():
-        output.write(word + "\n")
-        for disposition, frequency in disposition_dict.items():
-            output.write("\t" + disposition + " " + str(frequency) + "\n")'''
+print_dictionary(wordFrequencies)
