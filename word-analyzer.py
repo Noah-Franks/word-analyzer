@@ -21,9 +21,13 @@ def print_dictionary(dictionary, tabs=0):
             print("\t" * tabs       + str(key))
             print("\t" * (tabs + 1) + str(dictionary[key]))
 
-def write_dictionary(dictionary):
+def write_dictionary(dictionary, formatted=True):
 
-    
+    if not formatted:
+        with open('word-frequencies.txt', 'w') as outputfile:
+            outputfile.write(str(dictionary))
+        return
+
     def dictToString(dictionary, spaces=0):
         writeString = ''
         for key in dictionary:
@@ -39,6 +43,7 @@ def write_dictionary(dictionary):
 
     with open('word-frequencies.txt', 'w') as outputfile:
         outputfile.write(writeString)
+
 
 def words_from_file(filepath):
     words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
@@ -98,5 +103,4 @@ def words_from_directory(directorypath):
 
 #wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
-write_dictionary(wordFrequencies)
-print_dictionary(wordFrequencies)
+write_dictionary(wordFrequencies, False)
