@@ -1,26 +1,30 @@
 import os
+import pickle
 
+# words data structure:
+#
+# words
+#     word
+#          total frequency              The number of times a word is present in a set of files
+#          file frequency               The number of different files a word is present in
+#          dispositions                 The outcome of the phone call
+#               disposition             The choice selected by an agent
+#                    frequency          The number of times a word is in a file with a given disposition
+#          ...
+#     ...
 
 
 def load_from_file(filepath):   # loads the output of word-analyzer into memory
-	data = None
+	return pickle.load(open("word-frequencies.txt", "rb"))
 
-	read_string = ''
-	with open(filepath, 'r') as source:
-		for line in source:
-			read_string += line
-
-	print (read_string)
-	data = dict(read_string)
-		
-
-	return data
-
-def print_data(data):
-	for word, disposition_dict in data.items():
-		print(word)
-		for disposition, frequency in disposition_dict.items():
-			print("\t%s %s" % (disposition, frequency))
+def print_dictionary(dictionary, tabs=0):
+    for key in dictionary:
+        if isinstance(dictionary[key], dict):
+            print("\t" * tabs + str(key))
+            print_dictionary(dictionary[key], tabs + 1)
+        else:
+            print("\t" * tabs       + str(key))
+            print("\t" * (tabs + 1) + str(dictionary[key]))
 
 
 def prune_data_by_percentage(data, limit_percentage):   # shortens the amount of data to work with by eliminating rare words
@@ -35,6 +39,6 @@ def prune_data_by_percentage(data, limit_percentage):   # shortens the amount of
 		print(frequency_percentage)
 
 
-data = load_from_file('word-frequencies.txt')
-print(data)
+words = load_from_file('word-frequencies.txt')
+print(words)
 #prune_data_by_percentage(data, 1.0)
