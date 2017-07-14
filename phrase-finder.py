@@ -1,5 +1,6 @@
 import os
 import pickle
+import statistics as stats
 
 # words data structure:
 #
@@ -38,17 +39,37 @@ def prune_data_by_percentage(data, meta, limit_percentage):   # shortens the amo
 		else:
 			del pruned_data[word]
 
-	return data
+	return pruned_data
 
 
-def find_word_success(data):
+def analyze_word_disposition_percentage_composition(data):
+
+	analysis = {}
 
 	for word, root_dict in data.items():
 		for disposition in root_dict['dispositions']:
-			print("%s\t%s\t%s" % (word, disposition, root_dict['dispositions'][disposition] / root_dict['total frequency']))
+
+			percentage = root_dict['dispositions'][disposition] / root_dict['total frequency']
+			
+			if disposition not in analysis:
+				analysis[disposition] = {}
+				analysis[disposition]['values'] = []
+			analysis[disposition]['values'].append(percentage)
+
+	for disposition in analysis:
+		mean = sum(analysis[disposition]['values']) / len(analysis[disposition]['values'])
+		standard_deviation = stats.pstdev(analysis[disposition]['values'], mean)
+
+		analysis[disposition]['mean'] = mean
+		analysis[disposition]['standard deviation'] = standard_deviation
+
+		print('%s\n\tmu: %s\n\tst: %s' % (disposition, mean * 100, standard_deviation))
+
+		for word in data:
+			percentage = data[word]['dispositions'][disposition] / data[word]['total frequency']
 
 
 words = load_from_file('word-frequencies.txt')
 meta  = load_from_file('meta.txt')
-words = prune_data_by_percentage(words, meta, 10.0)   # Remove the lower-frequency words to improve the analysis
-words = find_word_success(words)
+words = prune_data_by_percentage(words, meta, 0.5)   # Remove the lower-frequency words to improve the analysis
+words = analyze_word_disposition_percentage_composition(words)
