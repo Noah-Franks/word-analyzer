@@ -3,12 +3,6 @@ if [[ $1 == '' ]]; then
 	exit 1
 fi
 
-invert=$2
-if [[ $invert == '' ]]; then
-	invert='false'
-else 
-	invert='true'
-fi
 
 search_word=$1
 
@@ -19,7 +13,7 @@ selected=''
 while read line; do
 	if [[ ! $line == *' '* ]]; then
 		speaker=$line
-		all_speakers="$all_speakers|$line"
+		all_speakers="$all_speakers $line"
 	else
 		if [[ $line == *"$search_word"* ]]; then
 			echo "$speaker $line"
@@ -28,7 +22,14 @@ while read line; do
 	fi
 done < agent-profiles.txt
 
-all_speakers="${//\|/ }"
+echo "\tPositive: $selected"
 
-echo "\t$selected"
-echo "\t$all_speakers"
+
+report_speakers=''
+for agent in $all_speakers; do
+	if [[ $selected != *"$agent"* ]]; then
+		report_speakers="$report_speakers|$agent"
+	fi
+done
+
+echo "\tNegative: $report_speakers"
