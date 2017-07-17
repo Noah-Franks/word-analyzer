@@ -51,7 +51,7 @@ def analyze_word_disposition_percentage_composition(data):
 		for disposition in root_dict['dispositions']:
 
 			percentage = root_dict['dispositions'][disposition] / root_dict['total frequency']
-			
+
 			if disposition not in analysis:
 				analysis[disposition] = {}
 				analysis[disposition]['values'] = []
@@ -79,11 +79,45 @@ def analyze_word_disposition_percentage_composition(data):
 				elif math.fabs(z_score) > 1.960:
 					print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.05, percentage, z_score))
 
+def analyze_word_agent_percentage_composition(data):
 
+	analysis = {}
+
+	for word, root_dict in data.items():
+		for agent in root_dict['agents']:
+
+			percentage = root_dict['agents'][agent] / root_dict['total frequency']
+
+			if agent not in analysis:
+				analysis[agent] = {}
+				analysis[agent]['values'] = []
+			analysis[agent]['values'].append(percentage)
+
+	for agent in analysis:
+		mean = sum(analysis[agent]['values']) / len(analysis[agent]['values'])
+		standard_deviation = stats.pstdev(analysis[agent]['values'], mean)
+
+		analysis[agent]['mean'] = mean
+		analysis[agent]['standard deviation'] = standard_deviation
+
+		print('%s\n\tmu: %s\n\tst: %s' % (agent, mean * 100, standard_deviation))
+
+		for word in data:
+			if agent in data[word]['agents']:
+				percentage = data[word]['agents'][agent] / data[word]['total frequency']
+				z_score = (percentage - mean) / standard_deviation
+				if math.fabs(z_score) > 3.819:
+					print('\t%s%s\tp < %s  \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.0001, percentage, z_score))
+				elif math.fabs(z_score) > 3.291:
+					print('\t%s%s\tp < %s   \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.001, percentage, z_score))
+				elif math.fabs(z_score) > 2.576:
+					print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.01, percentage, z_score))
+				elif math.fabs(z_score) > 1.960:
+					print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.05, percentage, z_score))
 
 
 
 words = load_from_file('word-frequencies.txt')
 meta  = load_from_file('meta.txt')
 words = prune_data_by_percentage(words, meta, 0.5)   # Remove the lower-frequency words to improve the analysis
-words = analyze_word_disposition_percentage_composition(words)
+words = analyze_word_agent_percentage_composition(words)
