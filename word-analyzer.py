@@ -8,7 +8,10 @@ import pickle
 #     word
 #          total frequency              The number of times a word is present in a set of files
 #          file frequency               The number of different files a word is present in
-#          dispositions                 The outcome of the phone call
+#          agents                       The agents associated with a word
+#               agent                   The agent
+#                    frequency          The number of times a word is in a file with a given agent
+#          dispositions                 The outcomes associated with a word
 #               disposition             The choice selected by an agent
 #                    frequency          The number of times a word is in a file with a given disposition
 #          ...
@@ -50,6 +53,7 @@ def words_from_file(filepath):
     words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
 
     disposition = filepath[filepath.find('_as_') + 4 : filepath.find('.txt')]
+    agent       = filepath[filepath.find('_by_') + 4 : filepath.find('_as_')]
 
     with open(filepath, 'r') as file:
         for line in file:
@@ -59,14 +63,18 @@ def words_from_file(filepath):
                 if word not in words:
                     words[word] = {}
                     words[word]['dispositions']    = {}
+                    words[word]['agents']          = {}
                     words[word]['total frequency'] = 0
                     words[word]['file frequency']  = 1
 
                 if disposition not in words[word]['dispositions']:
                     words[word]['dispositions'][disposition] = 0
+                if agent not in words[word]['agents']:
+                    words[word]['agents'][agent] = 0
 
                 words[word]['dispositions'][disposition] += 1
                 words[word]['total frequency']           += 1
+                words[word]['agents'][agent]             += 1
 
     return words
 
@@ -86,6 +94,7 @@ def words_from_directory(directorypath):
                 if word not in allwords:
                     allwords[word]                    = {}
                     allwords[word]['dispositions']    = {}
+                    allwords[word]['agents']          = {}
                     allwords[word]['total frequency'] = 0
                     allwords[word]['file frequency']  = 0
 
@@ -98,6 +107,13 @@ def words_from_directory(directorypath):
                         allwords[word]['dispositions'][disposition] = 0
                 
                     allwords[word]['dispositions'][disposition] += frequency
+
+                for agent, frequency in meta_dict['agents'].items():
+
+                    if agent not in allwords[word]['agents']:
+                        allwords[word]['agents'][agent] = 0
+
+                    allwords[word]['agents'][agent] += frequency
 
     return allwords
 
