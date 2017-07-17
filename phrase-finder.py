@@ -1,5 +1,6 @@
 import os
 import pickle
+import math
 import statistics as stats
 
 # words data structure:
@@ -66,7 +67,13 @@ def analyze_word_disposition_percentage_composition(data):
 		print('%s\n\tmu: %s\n\tst: %s' % (disposition, mean * 100, standard_deviation))
 
 		for word in data:
-			percentage = data[word]['dispositions'][disposition] / data[word]['total frequency']
+			if disposition in data[word]['dispositions']:
+				percentage = data[word]['dispositions'][disposition] / data[word]['total frequency']
+				z_score = (percentage - mean) / standard_deviation
+				if math.fabs(z_score) > 1.960:
+					print('\t%s\t\tz: %s' % (word, z_score))
+
+
 
 
 words = load_from_file('word-frequencies.txt')
