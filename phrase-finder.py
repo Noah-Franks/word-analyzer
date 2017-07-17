@@ -70,8 +70,15 @@ def analyze_word_disposition_percentage_composition(data):
 			if disposition in data[word]['dispositions']:
 				percentage = data[word]['dispositions'][disposition] / data[word]['total frequency']
 				z_score = (percentage - mean) / standard_deviation
-				if math.fabs(z_score) > 1.960:
-					print('\t%s\t\tz: %s' % (word, z_score))
+				if math.fabs(z_score) > 3.819:
+					print('\t%s%sp < %s\tz: %s' % (word, ' ' * (20 - len(word)), 0.0001, z_score))
+				elif math.fabs(z_score) > 3.291:
+					print('\t%s%sp < %s\tz: %s' % (word, ' ' * (20 - len(word)), 0.001, z_score))
+				elif math.fabs(z_score) > 2.576:
+					print('\t%s%sp < %s\tz: %s' % (word, ' ' * (20 - len(word)), 0.01, z_score))
+				elif math.fabs(z_score) > 1.960:
+					print('\t%s%sp < %s\tz: %s' % (word, ' ' * (20 - len(word)), 0.05, z_score))
+
 
 
 
