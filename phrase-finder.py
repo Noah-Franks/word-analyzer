@@ -1,4 +1,5 @@
 import os
+import sys
 import pickle
 import math
 import statistics as stats
@@ -9,7 +10,10 @@ import statistics as stats
 #     word
 #          total frequency              The number of times a word is present in a set of files
 #          file frequency               The number of different files a word is present in
-#          dispositions                 The outcome of the phone call
+#          agents                       The agents associated with a word
+#               agent                   The agent
+#                    frequency          The number of times a word is in a file with a given agent
+#          dispositions                 The outcomes associated with a word
 #               disposition             The choice selected by an agent
 #                    frequency          The number of times a word is in a file with a given disposition
 #          ...
@@ -120,4 +124,10 @@ def analyze_word_agent_percentage_composition(data):
 words = load_from_file('word-frequencies.txt')
 meta  = load_from_file('meta.txt')
 words = prune_data_by_percentage(words, meta, 0.5)   # Remove the lower-frequency words to improve the analysis
-words = analyze_word_agent_percentage_composition(words)
+
+for argument in sys.argv[1:]:
+	if argument.find('a') != -1:
+		analyze_word_agent_percentage_composition(words)
+	if argument.find('d') != -1:
+		analyze_word_disposition_percentage_composition(words)
+	
