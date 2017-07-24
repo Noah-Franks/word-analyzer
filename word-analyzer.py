@@ -68,7 +68,7 @@ def words_from_file(filepath):
             for word in line.split():
 
                 if word not in words:
-                    words[word] = {}
+                    words[word]                    = {}
                     words[word]['dispositions']    = {}
                     words[word]['agents']          = {}
                     words[word]['phrases']         = {}
@@ -89,22 +89,13 @@ def words_from_file(filepath):
                 words[word]['dispositions'][disposition] += 1
                 words[word]['total frequency']           += 1
                 words[word]['agents'][agent]             += 1
-                words[word]['phrases'][last_word]        += 1
+
+                if last_word:
+                    words[word]['phrases'][last_word]    += 1
 
                 last_word = word
 
     return words
-
-'''def phrases_from_file(filepath, number_of_words):
-    phrases = {}
-
-    with open(filepath, 'r') as file:
-        
-        line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
-        for word in line.split():
-
-            if word not in phrases:
-                phrases[word] = '''
 
 def words_from_directory(directorypath):
     allwords = {}
@@ -123,9 +114,12 @@ def words_from_directory(directorypath):
                     allwords[word]                    = {}
                     allwords[word]['dispositions']    = {}
                     allwords[word]['agents']          = {}
+                    allwords[word]['phrases']         = {}
+                    allwords[word]['start frequency'] = 0
                     allwords[word]['total frequency'] = 0
                     allwords[word]['file frequency']  = 0
 
+                allwords[word]['start frequency'] += meta_dict['start frequency']   # This should always be at most 1
                 allwords[word]['file frequency']  += meta_dict['file frequency']    # This should always be 1
                 allwords[word]['total frequency'] += meta_dict['total frequency']   # Adding the frequency of the word in the file
 
@@ -143,6 +137,13 @@ def words_from_directory(directorypath):
 
                     allwords[word]['agents'][agent] += frequency
 
+                for last_word, frequency in meta_dict['phrases'].items():
+
+                    if last_word not in allwords[word]['phrases']:
+                        allwords[word]['phrases'][last_word] = 0
+
+                    allwords[word]['phrases'][last_word] += frequency
+
     return allwords
 
 
@@ -158,9 +159,9 @@ def meta_from_directory(directorypath):
 
 
 
-#wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
 metaData = meta_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
 write_dictionary(wordFrequencies, 'word-frequencies.txt', False)
 write_dictionary(wordFrequencies, 'word-frequencies-human.txt', True)
 write_dictionary(metaData, 'meta.txt', False)
+print_dictionary(wordFrequencies)
