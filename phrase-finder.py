@@ -119,7 +119,8 @@ def analyze_word_agent_percentage_composition(data):
 				elif math.fabs(z_score) > 1.960:
 					print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.05, percentage, z_score))
 
-
+def find_phrases(data):
+	
 
 words = load_from_file('word-frequencies.txt')
 meta  = load_from_file('meta.txt')
@@ -130,4 +131,3 @@ for argument in sys.argv[1:]:
 		analyze_word_agent_percentage_composition(words)
 	if argument.find('d') != -1:
 		analyze_word_disposition_percentage_composition(words)
-	

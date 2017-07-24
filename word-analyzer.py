@@ -11,9 +11,14 @@ import pickle
 #          agents                       The agents associated with a word
 #               agent                   The agent
 #                    frequency          The number of times a word is in a file with a given agent
+#          ...
 #          dispositions                 The outcomes associated with a word
 #               disposition             The choice selected by an agent
 #                    frequency          The number of times a word is in a file with a given disposition
+#          ...
+#          phrases                      The phrases the word ends
+#               previous word           The word previous in the phrase
+#                    frequency          The number of times a word follows another
 #          ...
 #     ...
 
@@ -57,6 +62,8 @@ def words_from_file(filepath):
 
     with open(filepath, 'r') as file:
         for line in file:
+
+            last_word = None                                 # Used to remember the previous word for pairing
             line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
             for word in line.split():
 
@@ -64,6 +71,8 @@ def words_from_file(filepath):
                     words[word] = {}
                     words[word]['dispositions']    = {}
                     words[word]['agents']          = {}
+                    words[word]['phrases']         = {}
+                    words[word]['start frequency'] = 0
                     words[word]['total frequency'] = 0
                     words[word]['file frequency']  = 1
 
@@ -72,11 +81,30 @@ def words_from_file(filepath):
                 if agent not in words[word]['agents']:
                     words[word]['agents'][agent] = 0
 
+                if not last_word:                               # If no last word, this is the first word of the file
+                    words[word]['start frequency'] += 1
+                elif last_word not in words[word]['phrases']:
+                    words[word]['phrases'][last_word] = 0
+
                 words[word]['dispositions'][disposition] += 1
                 words[word]['total frequency']           += 1
                 words[word]['agents'][agent]             += 1
+                words[word]['phrases'][last_word]        += 1
+
+                last_word = word
 
     return words
+
+'''def phrases_from_file(filepath, number_of_words):
+    phrases = {}
+
+    with open(filepath, 'r') as file:
+        
+        line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
+        for word in line.split():
+
+            if word not in phrases:
+                phrases[word] = '''
 
 def words_from_directory(directorypath):
     allwords = {}
@@ -117,6 +145,7 @@ def words_from_directory(directorypath):
 
     return allwords
 
+
 def meta_from_directory(directorypath):
     meta = {}
     meta['file count'] = 0
@@ -126,6 +155,7 @@ def meta_from_directory(directorypath):
             meta['file count'] += 1
 
     return meta
+
 
 
 #wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/VCTK-8000-Fake/newText/')
