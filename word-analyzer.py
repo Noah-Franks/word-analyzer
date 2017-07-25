@@ -18,7 +18,7 @@ import pickle
 #               ...
 #          phrases                            The phrases the word ends
 #               phrase length
-#                    previous word            The previous words in the phrase
+#                    phrase root              The previous words in the phrase
 #                         total frequency     The number of times a word completes a phrase of a specific length
 #                         file frequency      The number of different files a word is present in
 #                         dispositions        The outcomes associated with a phrase
@@ -104,6 +104,13 @@ def words_from_file(filepath):
 				if not phrase_roots:                      # This means that this is the first word in the file
 					words[word]['start frequency'] += 1
 
+				new_last_words = [word,]
+				for part in last_words:                   # Push word to start of list and delete the last entry
+					new_last_words.append(part)
+				if len(new_last_words) > max_phrase_length:
+					del new_last_words[-1]
+				last_words = new_last_words
+
 				for root in phrase_roots:
 					root_size = len(root.split())
 					if root not in words[word]['phrases'][root_size]:
@@ -112,15 +119,15 @@ def words_from_file(filepath):
 						words[word]['phrases'][root_size][root]['total frequency'] = 0
 						words[word]['phrases'][root_size][root]['file frequency']  = 1
 
-					words[word]['phrases'][root_size][root]['total frequency'] += 1
-					words[word]['phrases'][root_size][root]['']
+					if disposition not in words[word]['phrases'][root_size][root]['dispositions']:
+						words[word]['phrases'][root_size][root]['dispositions'][disposition] = 0
+					if agent not in words[word]['phrases'][root_size][root]['agents']:
+						words[word]['phrases'][root_size][root]['agents'][agent] = 0
 
-				new_last_words = [word,]
-				for part in last_words:    # Push word to start of list and delete the last entry
-					new_last_words.append(part)
-				if len(new_last_words) > max_phrase_length:
-					del new_last_words[-1]
-				last_words = new_last_words
+					
+					words[word]['phrases'][root_size][root]['dispositions'][disposition] += 1
+					words[word]['phrases'][root_size][root]['total frequency']           += 1
+					words[word]['phrases'][root_size][root]['agents'][agent]             += 1
 
 
 				words[word]['dispositions'][disposition] += 1
