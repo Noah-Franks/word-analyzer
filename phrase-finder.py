@@ -31,13 +31,13 @@ def load_from_file(filepath):   # loads the output of word-analyzer into memory
 	return pickle.load(open(filepath, "rb"))
 
 def print_dictionary(dictionary, tabs=0):
-    for key in dictionary:
-        if isinstance(dictionary[key], dict):
-            print("\t" * tabs + str(key))
-            print_dictionary(dictionary[key], tabs + 1)
-        else:
-            print("\t" * tabs       + str(key))
-            print("\t" * (tabs + 1) + str(dictionary[key]))
+	for key in dictionary:
+		if isinstance(dictionary[key], dict):
+			print("\t" * tabs + str(key))
+			print_dictionary(dictionary[key], tabs + 1)
+		else:
+			print("\t" * tabs       + str(key))
+			print("\t" * (tabs + 1) + str(dictionary[key]))
 
 def prune_data_by_percentage(data, meta, limit_percentage):   # shortens the amount of data to work with by eliminating rare words
 	

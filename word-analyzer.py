@@ -34,169 +34,169 @@ max_phrase_length = 7
 
 
 def print_dictionary(dictionary, tabs=0):
-    for key in dictionary:
-        if isinstance(dictionary[key], dict):
-            print("\t" * tabs + str(key))
-            print_dictionary(dictionary[key], tabs + 1)
-        else:
-            print("\t" * tabs       + str(key))
-            print("\t" * (tabs + 1) + str(dictionary[key]))
+	for key in dictionary:
+		if isinstance(dictionary[key], dict):
+			print("\t" * tabs + str(key))
+			print_dictionary(dictionary[key], tabs + 1)
+		else:
+			print("\t" * tabs       + str(key))
+			print("\t" * (tabs + 1) + str(dictionary[key]))
 
 def write_dictionary(dictionary, path, formatted=True):
 
-    if not formatted:
-        pickle.dump(dictionary, open(path, 'wb'), -1)
-        return
+	if not formatted:
+		pickle.dump(dictionary, open(path, 'wb'), -1)
+		return
 
-    def dictToString(dictionary, spaces=0):
-        writeString = ''
-        for key in dictionary:
-            if isinstance(dictionary[key], dict):
-                writeString += " " * spaces + str(key) + "\n"
-                writeString += dictToString(dictionary[key], spaces + 1)
-            else:
-                writeString += " " * spaces       + str(key) + "\n"
-                writeString += " " * (spaces + 1) + str(dictionary[key]) + "\n"
-        return writeString
+	def dictToString(dictionary, spaces=0):
+		writeString = ''
+		for key in dictionary:
+			if isinstance(dictionary[key], dict):
+				writeString += " " * spaces + str(key) + "\n"
+				writeString += dictToString(dictionary[key], spaces + 1)
+			else:
+				writeString += " " * spaces       + str(key) + "\n"
+				writeString += " " * (spaces + 1) + str(dictionary[key]) + "\n"
+		return writeString
 
-    writeString = dictToString(dictionary)
+	writeString = dictToString(dictionary)
 
-    with open(path, 'w') as outputfile:
-        outputfile.write(writeString)
+	with open(path, 'w') as outputfile:
+		outputfile.write(writeString)
 
 
 def words_from_file(filepath):
-    words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
+	words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
 
-    disposition = filepath[filepath.find('_as_') + 4 : filepath.find('.txt')]
-    agent       = filepath[filepath.find('_by_') + 4 : filepath.find('_as_')]
+	disposition = filepath[filepath.find('_as_') + 4 : filepath.find('.txt')]
+	agent       = filepath[filepath.find('_by_') + 4 : filepath.find('_as_')]
 
-    with open(filepath, 'r') as file:
-        for line in file:
+	with open(filepath, 'r') as file:
+		for line in file:
 
-            last_words = []                                  # Words to remember for phrase building. 0 is most recent.
-            line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
-            for word in line.split():
+			last_words = []                                  # Words to remember for phrase building. 0 is most recent.
+			line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
+			for word in line.split():
 
-                if word not in words:
-                    words[word]                    = {}
-                    words[word]['dispositions']    = {}
-                    words[word]['agents']          = {}
-                    words[word]['phrases']         = {}
-                    words[word]['start frequency'] = 0
-                    words[word]['total frequency'] = 0
-                    words[word]['file frequency']  = 1
+				if word not in words:
+					words[word]                    = {}
+					words[word]['dispositions']    = {}
+					words[word]['agents']          = {}
+					words[word]['phrases']         = {}
+					words[word]['start frequency'] = 0
+					words[word]['total frequency'] = 0
+					words[word]['file frequency']  = 1
 
-                    for i in range(max_phrase_length):
-                        words[word]['phrases'][i + 1] = {}   # Separate phrases based on length
+					for i in range(max_phrase_length):
+						words[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
-                if disposition not in words[word]['dispositions']:
-                    words[word]['dispositions'][disposition] = 0
-                if agent not in words[word]['agents']:
-                    words[word]['agents'][agent] = 0
+				if disposition not in words[word]['dispositions']:
+					words[word]['dispositions'][disposition] = 0
+				if agent not in words[word]['agents']:
+					words[word]['agents'][agent] = 0
 
-                phrase_roots = []
-                for part in last_words:
-                    for i in range(len(phrase_roots)):
-                        phrase_roots[i] = "%s %s" % (phrase_roots[i], part)   # Phrases are built backwards
-                    phrase_roots.append(part)
+				phrase_roots = []
+				for part in last_words:
+					for i in range(len(phrase_roots)):
+						phrase_roots[i] = "%s %s" % (phrase_roots[i], part)   # Phrases are built backwards
+					phrase_roots.append(part)
 
-                if not phrase_roots:                      # This means that this is the first word in the file
-                    words[word]['start frequency'] += 1
+				if not phrase_roots:                      # This means that this is the first word in the file
+					words[word]['start frequency'] += 1
 
-                for root in phrase_roots:
-                    root_size = len(root.split())
-                    if root not in words[word]['phrases'][root_size]:
-                        words[word]['phrases'][root_size][root] = 0
-                        words[word]['phrases'][root_size][root]['dispositions']    = {}
-                        words[word]['phrases'][root_size][root]['total frequency'] = 0
-                        words[word]['phrases'][root_size][root]['file frequency']  = 1
+				for root in phrase_roots:
+					root_size = len(root.split())
+					if root not in words[word]['phrases'][root_size]:
+						words[word]['phrases'][root_size][root] = 0
+						words[word]['phrases'][root_size][root]['dispositions']    = {}
+						words[word]['phrases'][root_size][root]['total frequency'] = 0
+						words[word]['phrases'][root_size][root]['file frequency']  = 1
 
-                    words[word]['phrases'][root_size][root]['total frequency'] += 1
-                    words[word]['phrases'][root_size][root]['']
+					words[word]['phrases'][root_size][root]['total frequency'] += 1
+					words[word]['phrases'][root_size][root]['']
 
-                new_last_words = [word,]
-                for part in last_words:    # Push word to start of list and delete the last entry
-                    new_last_words.append(part)
-                if len(new_last_words) > max_phrase_length:
-                    del new_last_words[-1]
-                last_words = new_last_words
+				new_last_words = [word,]
+				for part in last_words:    # Push word to start of list and delete the last entry
+					new_last_words.append(part)
+				if len(new_last_words) > max_phrase_length:
+					del new_last_words[-1]
+				last_words = new_last_words
 
 
-                words[word]['dispositions'][disposition] += 1
-                words[word]['total frequency']           += 1
-                words[word]['agents'][agent]             += 1
+				words[word]['dispositions'][disposition] += 1
+				words[word]['total frequency']           += 1
+				words[word]['agents'][agent]             += 1
 
-    return words
+	return words
 
 def words_from_directory(directorypath):
-    allwords = {}
+	allwords = {}
 
-    total_files = 68155   # I found this beforhand
-    total_done  = 1
+	total_files = 68155   # I found this beforhand
+	total_done  = 1
 
-    for root, dirs, files in os.walk(directorypath):
-        for filename in files:
-            
-            filepath = os.path.join(root, filename)
-            #print("\r", end="")
-            progress = int(100.0 * total_done / total_files)
-            print("\r|%s%s|" % (progress * '#', (100 - progress) * ' '), end="")
-            total_done += 1
+	for root, dirs, files in os.walk(directorypath):
+		for filename in files:
+			
+			filepath = os.path.join(root, filename)
+			#print("\r", end="")
+			progress = int(100.0 * total_done / total_files)
+			print("\r|%s%s|" % (progress * '#', (100 - progress) * ' '), end="")
+			total_done += 1
 
-            filewords = words_from_file(filepath)
-            
-            for word, meta_dict in filewords.items():
+			filewords = words_from_file(filepath)
+			
+			for word, meta_dict in filewords.items():
 
-                if word not in allwords:
-                    allwords[word]                    = {}
-                    allwords[word]['dispositions']    = {}
-                    allwords[word]['agents']          = {}
-                    allwords[word]['phrases']         = {}
-                    allwords[word]['start frequency'] = 0
-                    allwords[word]['total frequency'] = 0
-                    allwords[word]['file frequency']  = 0
-                    for i in range(max_phrase_length):
-                        allwords[word]['phrases'][i + 1] = {}   # Separate phrases based on length
+				if word not in allwords:
+					allwords[word]                    = {}
+					allwords[word]['dispositions']    = {}
+					allwords[word]['agents']          = {}
+					allwords[word]['phrases']         = {}
+					allwords[word]['start frequency'] = 0
+					allwords[word]['total frequency'] = 0
+					allwords[word]['file frequency']  = 0
+					for i in range(max_phrase_length):
+						allwords[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
-                allwords[word]['start frequency'] += meta_dict['start frequency']   # This should always be at most 1
-                allwords[word]['file frequency']  += meta_dict['file frequency']    # This should always be 1
-                allwords[word]['total frequency'] += meta_dict['total frequency']   # Adding the frequency of the word in the file
+				allwords[word]['start frequency'] += meta_dict['start frequency']   # This should always be at most 1
+				allwords[word]['file frequency']  += meta_dict['file frequency']    # This should always be 1
+				allwords[word]['total frequency'] += meta_dict['total frequency']   # Adding the frequency of the word in the file
 
-                for disposition, frequency in meta_dict['dispositions'].items():
+				for disposition, frequency in meta_dict['dispositions'].items():
 
-                    if disposition not in allwords[word]['dispositions']:
-                        allwords[word]['dispositions'][disposition] = 0
-                
-                    allwords[word]['dispositions'][disposition] += frequency
+					if disposition not in allwords[word]['dispositions']:
+						allwords[word]['dispositions'][disposition] = 0
+				
+					allwords[word]['dispositions'][disposition] += frequency
 
-                for agent, frequency in meta_dict['agents'].items():
+				for agent, frequency in meta_dict['agents'].items():
 
-                    if agent not in allwords[word]['agents']:
-                        allwords[word]['agents'][agent] = 0
+					if agent not in allwords[word]['agents']:
+						allwords[word]['agents'][agent] = 0
 
-                    allwords[word]['agents'][agent] += frequency
+					allwords[word]['agents'][agent] += frequency
 
-                for phrase_length in filewords[word]['phrases']:
-                    for phrase_root in filewords[word]['phrases'][phrase_length]:
+				for phrase_length in filewords[word]['phrases']:
+					for phrase_root in filewords[word]['phrases'][phrase_length]:
 
-                        if phrase_root not in allwords[word]['phrases'][phrase_length]:
-                            allwords[word]['phrases'][phrase_length][phrase_root] = 0
+						if phrase_root not in allwords[word]['phrases'][phrase_length]:
+							allwords[word]['phrases'][phrase_length][phrase_root] = 0
 
-                        allwords[word]['phrases'][phrase_length][phrase_root] += filewords[word]['phrases'][phrase_length][phrase_root]
+						allwords[word]['phrases'][phrase_length][phrase_root] += filewords[word]['phrases'][phrase_length][phrase_root]
 
-    return allwords
+	return allwords
 
 
 def meta_from_directory(directorypath):
-    meta = {}
-    meta['file count'] = 0
+	meta = {}
+	meta['file count'] = 0
 
-    for root, dirs, files in os.walk(directorypath):
-        for filename in files:
-            meta['file count'] += 1
+	for root, dirs, files in os.walk(directorypath):
+		for filename in files:
+			meta['file count'] += 1
 
-    return meta
+	return meta
 
 
 
