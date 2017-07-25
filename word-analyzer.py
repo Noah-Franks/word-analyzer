@@ -6,20 +6,24 @@ import pickle
 #
 # words
 #     word
-#          total frequency              The number of times a word is present in a set of files
-#          file frequency               The number of different files a word is present in
-#          agents                       The agents associated with a word
-#               agent                   The agent
-#                    frequency          The number of times a word is in a file with a given agent
+#          total frequency                    The number of times a word is present in a set of files
+#          file frequency                     The number of different files a word is present in
+#          agents                             The agents associated with a word
+#               agent                         The agent
+#                    frequency                The number of times a word is in a file with a given agent
 #               ...
-#          dispositions                 The outcomes associated with a word
-#               disposition             The choice selected by an agent
-#                    frequency          The number of times a word is in a file with a given disposition
+#          dispositions                       The outcomes associated with a word
+#               disposition                   The choice selected by an agent
+#                    frequency                The number of times a word is in a file with a given disposition
 #               ...
-#          phrases                      The phrases the word ends
+#          phrases                            The phrases the word ends
 #               phrase length
-#                    previous word      The previous words in the phrase
-#                         frequency     The number of times a word completes a phrase of a specific length
+#                    previous word            The previous words in the phrase
+#                         total frequency     The number of times a word completes a phrase of a specific length
+#                         dispositions        The outcomes associated with a phrase
+#                              disposition    The choice selected by an agent
+#                              frequency      The number of times a phrase is in a file with a given disposition
+#                         ...
 #                    ...
 #          ...
 #     ...
@@ -104,13 +108,6 @@ def words_from_file(filepath):
                         words[word]['phrases'][root_size][root] = 0
 
                     words[word]['phrases'][root_size][root] += 1
-
-                '''for i in range(len(phrase_roots)):
-                    root = phrase_roots[i]
-                    if root not in words[word]['phrases'][i + 1]:
-                        words[word]['phrases'][i + 1][root] = 0
-
-                    words[word]['phrases'][i + 1][root] += 1'''
 
                 new_last_words = [word,]
                 for part in last_words:    # Push word to start of list and delete the last entry
