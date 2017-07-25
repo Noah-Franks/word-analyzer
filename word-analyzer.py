@@ -11,14 +11,20 @@ import pickle
 #          agents                       The agents associated with a word
 #               agent                   The agent
 #                    frequency          The number of times a word is in a file with a given agent
-#          ...
+#               ...
 #          dispositions                 The outcomes associated with a word
 #               disposition             The choice selected by an agent
 #                    frequency          The number of times a word is in a file with a given disposition
-#          ...
+#               ...
 #          phrases                      The phrases the word ends
-#               previous word           The word previous in the phrase
-#                    frequency          The number of times a word follows another
+#               pairs
+#                    previous word      The word previous in the phrase
+#                         frequency     The number of times a word follows another
+#                    ...
+#               triplets
+#                    previous words     The two words previous in the phrase
+#                         frequency     The number of times a word completes a triplet
+#                    ...
 #          ...
 #     ...
 
@@ -63,7 +69,8 @@ def words_from_file(filepath):
     with open(filepath, 'r') as file:
         for line in file:
 
-            last_word = None                                 # Used to remember the previous word for pairing
+            last_words = []                                  # Words to remember for phrase building. 0 is most recent.
+            max_phrase_length = 5
             line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
             for word in line.split():
 
@@ -75,25 +82,38 @@ def words_from_file(filepath):
                     words[word]['start frequency'] = 0
                     words[word]['total frequency'] = 0
                     words[word]['file frequency']  = 1
+                    for i in range(max_phrase_length):
+                        words[word]['phrases'][i +  1] = {}   # Separate phrases based on length
 
                 if disposition not in words[word]['dispositions']:
                     words[word]['dispositions'][disposition] = 0
                 if agent not in words[word]['agents']:
                     words[word]['agents'][agent] = 0
 
-                if not last_word:                               # If no last word, this is the first word of the file
+                phrase_roots = []
+                for part in last_words:
+                    for i in range(len(phrase_roots)):
+                        phrase_roots[i] = "%s %s" % (phrase_roots[i], part)   # Phrases are built backwards
+                    phrase_roots.append(part)
+
+                if not phrase_roots[0]:                   # This means that this is the first word in the file
                     words[word]['start frequency'] += 1
-                elif last_word not in words[word]['phrases']:
-                    words[word]['phrases'][last_word] = 0
+
+                for i in range(len(phrase_roots)):
+                    root = phrase_roots[i]
+                    if root not in words[word]['phrases'][i + 1]:
+                        words[word]['phrases'][i + 1][root] = 0
+
+                    words[word]['phrases'][i + 1][root] += 1
+
+                new_last_words = [word,]
+                for i in range(len(last_words) - 1):       # Push word to start of list and delete the last entry
+                    new_last_words.append(last_words[i])
+
 
                 words[word]['dispositions'][disposition] += 1
                 words[word]['total frequency']           += 1
                 words[word]['agents'][agent]             += 1
-
-                if last_word:
-                    words[word]['phrases'][last_word]    += 1
-
-                last_word = word
 
     return words
 
