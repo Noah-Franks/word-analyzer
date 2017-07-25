@@ -122,35 +122,45 @@ def analyze_word_agent_percentage_composition(data):
 def analyze_word_phrase_composition(data):
 
 	phrases = {}
-	frequencies = []
+	phrases['lengths'] = {}
 
-	for word, root_dict in data.items():
-		for last_word in root_dict['phrases']:
+	for word in data:
+		for phrase_length in data[word]['phrases']:
 
-			frequency = words[word]['phrases'][last_word]
-			phrase = "%s %s" % (last_word, word)
+			if phrase_length not in phrases['lengths']:
+				phrases['lengths'][phrase_length] = {}
+				phrases['lengths'][phrase_length]['phrases'] = {}       # Phrases paired with frequencies
+				phrases['lengths'][phrase_length]['frequencies'] = []   # List of frequencies used for statistics
 
-			phrases[phrase] = frequency
-			frequencies.append(frequency)
+			for root in data[word]['phrases'][phrase_length]:
 
-	mean = sum(frequencies) / len(frequencies)
-	standard_deviation = stats.pstdev(frequencies, mean)
+				frequency = words[word]['phrases'][phrase_length][root]
 
-	for phrase in phrases:
+				phrase = word
+				for part in root.split():
+					phrase = "%s %s" % (part, phrase)
+				#phrase = "%s %s" % (word, phrase)
 
-		frequency = phrases[phrase]
-		z_score = (frequency - mean) / standard_deviation
-		if math.fabs(z_score) > 3.819:
-			print('\t%s%s\tp < %s  \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.0001, frequency, z_score))
-		elif math.fabs(z_score) > 3.291:
-			print('\t%s%s\tp < %s   \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.001, frequency, z_score))
-		elif math.fabs(z_score) > 2.576:
-			print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.01, frequency, z_score))
-		elif math.fabs(z_score) > 1.960:
-			print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.05, frequency, z_score))
+				phrases['lengths'][phrase_length]['phrases'][phrase] = frequency
+				phrases['lengths'][phrase_length]['frequencies'].append(frequency)
 
+	for phrase_length in phrases['lengths']:
+		mean = sum(phrases['lengths'][phrase_length]['frequencies']) / len(phrases['lengths'][phrase_length]['frequencies'])
+		standard_deviation = stats.pstdev(phrases['lengths'][phrase_length]['frequencies'], mean)
 
+		for phrase in phrases['lengths'][phrase_length]['phrases']:
 
+			frequency = phrases['lengths'][phrase_length]['phrases'][phrase]
+			z_score = (frequency - mean) / standard_deviation
+
+			if math.fabs(z_score) > 3.819:
+				print('\t%s%s\tp < %s  \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.0001, frequency, z_score))
+			elif math.fabs(z_score) > 3.291:
+				print('\t%s%s\tp < %s   \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.001, frequency, z_score))
+			elif math.fabs(z_score) > 2.576:
+				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.01, frequency, z_score))
+			elif math.fabs(z_score) > 1.960:
+				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.05, frequency, z_score))
 
 
 words = load_from_file('word-frequencies.txt')
