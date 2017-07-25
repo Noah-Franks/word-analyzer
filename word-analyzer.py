@@ -17,13 +17,9 @@ import pickle
 #                    frequency          The number of times a word is in a file with a given disposition
 #               ...
 #          phrases                      The phrases the word ends
-#               pairs
-#                    previous word      The word previous in the phrase
-#                         frequency     The number of times a word follows another
-#                    ...
-#               triplets
-#                    previous words     The two words previous in the phrase
-#                         frequency     The number of times a word completes a triplet
+#               phrase length
+#                    previous word      The previous words in the phrase
+#                         frequency     The number of times a word completes a phrase of a specific length
 #                    ...
 #          ...
 #     ...
