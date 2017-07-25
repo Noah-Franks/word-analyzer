@@ -20,6 +20,7 @@ import pickle
 #               phrase length
 #                    previous word            The previous words in the phrase
 #                         total frequency     The number of times a word completes a phrase of a specific length
+#                         file frequency      The number of different files a word is present in
 #                         dispositions        The outcomes associated with a phrase
 #                              disposition    The choice selected by an agent
 #                              frequency      The number of times a phrase is in a file with a given disposition
@@ -85,6 +86,7 @@ def words_from_file(filepath):
                     words[word]['start frequency'] = 0
                     words[word]['total frequency'] = 0
                     words[word]['file frequency']  = 1
+
                     for i in range(max_phrase_length):
                         words[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
@@ -106,8 +108,12 @@ def words_from_file(filepath):
                     root_size = len(root.split())
                     if root not in words[word]['phrases'][root_size]:
                         words[word]['phrases'][root_size][root] = 0
+                        words[word]['phrases'][root_size][root]['dispositions']    = {}
+                        words[word]['phrases'][root_size][root]['total frequency'] = 0
+                        words[word]['phrases'][root_size][root]['file frequency']  = 1
 
-                    words[word]['phrases'][root_size][root] += 1
+                    words[word]['phrases'][root_size][root]['total frequency'] += 1
+                    words[word]['phrases'][root_size][root]['']
 
                 new_last_words = [word,]
                 for part in last_words:    # Push word to start of list and delete the last entry
