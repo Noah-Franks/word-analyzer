@@ -28,6 +28,10 @@ import pickle
 #          ...
 #     ...
 
+# Constants
+max_phrase_length = 5
+
+
 def print_dictionary(dictionary, tabs=0):
     for key in dictionary:
         if isinstance(dictionary[key], dict):
@@ -70,7 +74,6 @@ def words_from_file(filepath):
         for line in file:
 
             last_words = []                                  # Words to remember for phrase building. 0 is most recent.
-            max_phrase_length = 5
             line = re.sub('[^0-9a-z ]+', '', line.lower())   # Make string lowercase and strip away trailing periods
             for word in line.split():
 
@@ -83,7 +86,7 @@ def words_from_file(filepath):
                     words[word]['total frequency'] = 0
                     words[word]['file frequency']  = 1
                     for i in range(max_phrase_length):
-                        words[word]['phrases'][i +  1] = {}   # Separate phrases based on length
+                        words[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
                 if disposition not in words[word]['dispositions']:
                     words[word]['dispositions'][disposition] = 0
@@ -96,19 +99,29 @@ def words_from_file(filepath):
                         phrase_roots[i] = "%s %s" % (phrase_roots[i], part)   # Phrases are built backwards
                     phrase_roots.append(part)
 
-                if not phrase_roots[0]:                   # This means that this is the first word in the file
+                if not phrase_roots:                      # This means that this is the first word in the file
                     words[word]['start frequency'] += 1
 
-                for i in range(len(phrase_roots)):
+                for root in phrase_roots:
+                    root_size = len(root.split())
+                    if root not in words[word]['phrases'][root_size]:
+                        words[word]['phrases'][root_size][root] = 0
+
+                    words[word]['phrases'][root_size][root] += 1
+
+                '''for i in range(len(phrase_roots)):
                     root = phrase_roots[i]
                     if root not in words[word]['phrases'][i + 1]:
                         words[word]['phrases'][i + 1][root] = 0
 
-                    words[word]['phrases'][i + 1][root] += 1
+                    words[word]['phrases'][i + 1][root] += 1'''
 
                 new_last_words = [word,]
-                for i in range(len(last_words) - 1):       # Push word to start of list and delete the last entry
-                    new_last_words.append(last_words[i])
+                for part in last_words:    # Push word to start of list and delete the last entry
+                    new_last_words.append(part)
+                if len(new_last_words) > max_phrase_length:
+                    del new_last_words[-1]
+                last_words = new_last_words
 
 
                 words[word]['dispositions'][disposition] += 1
@@ -120,11 +133,15 @@ def words_from_file(filepath):
 def words_from_directory(directorypath):
     allwords = {}
 
+    total_files = 68155   # I found this beforhand
+    total_done  = 0
+
     for root, dirs, files in os.walk(directorypath):
         for filename in files:
             
             filepath = os.path.join(root, filename)
-            print(filename)
+            print("%s / %s" % (total_done, total_files))
+            total_done += 1
 
             filewords = words_from_file(filepath)
             
@@ -138,6 +155,8 @@ def words_from_directory(directorypath):
                     allwords[word]['start frequency'] = 0
                     allwords[word]['total frequency'] = 0
                     allwords[word]['file frequency']  = 0
+                    for i in range(max_phrase_length):
+                        allwords[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
                 allwords[word]['start frequency'] += meta_dict['start frequency']   # This should always be at most 1
                 allwords[word]['file frequency']  += meta_dict['file frequency']    # This should always be 1
@@ -157,12 +176,13 @@ def words_from_directory(directorypath):
 
                     allwords[word]['agents'][agent] += frequency
 
-                for last_word, frequency in meta_dict['phrases'].items():
+                for phrase_length in filewords[word]['phrases']:
+                    for phrase_root in filewords[word]['phrases'][phrase_length]:
 
-                    if last_word not in allwords[word]['phrases']:
-                        allwords[word]['phrases'][last_word] = 0
+                        if phrase_root not in allwords[word]['phrases'][phrase_length]:
+                            allwords[word]['phrases'][phrase_length][phrase_root] = 0
 
-                    allwords[word]['phrases'][last_word] += frequency
+                        allwords[word]['phrases'][phrase_length][phrase_root] += filewords[word]['phrases'][phrase_length][phrase_root]
 
     return allwords
 
@@ -184,4 +204,4 @@ metaData = meta_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/do
 write_dictionary(wordFrequencies, 'word-frequencies.txt', False)
 write_dictionary(wordFrequencies, 'word-frequencies-human.txt', True)
 write_dictionary(metaData, 'meta.txt', False)
-print_dictionary(wordFrequencies)
+#print_dictionary(wordFrequencies)
