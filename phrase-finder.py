@@ -13,9 +13,16 @@ import statistics as stats
 #          agents                       The agents associated with a word
 #               agent                   The agent
 #                    frequency          The number of times a word is in a file with a given agent
+#               ...
 #          dispositions                 The outcomes associated with a word
 #               disposition             The choice selected by an agent
 #                    frequency          The number of times a word is in a file with a given disposition
+#               ...
+#          phrases                      The phrases the word ends
+#               phrase length
+#                    previous word      The previous words in the phrase
+#                         frequency     The number of times a word completes a phrase of a specific length
+#                    ...
 #          ...
 #     ...
 
@@ -154,25 +161,27 @@ def analyze_word_phrase_composition(data):
 			z_score = (frequency - mean) / standard_deviation
 
 			if math.fabs(z_score) > 3.819:
-				print('\t%s%s\tp < %s  \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.0001, frequency, z_score))
+				print('\t%s%s\tp < %s  \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.0001, frequency, z_score))
 			elif math.fabs(z_score) > 3.291:
-				print('\t%s%s\tp < %s   \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.001, frequency, z_score))
+				print('\t%s%s\tp < %s   \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.001, frequency, z_score))
 			elif math.fabs(z_score) > 2.576:
-				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.01, frequency, z_score))
+				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.01, frequency, z_score))
 			elif math.fabs(z_score) > 1.960:
-				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.05, frequency, z_score))
+				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.05, frequency, z_score))
 
 
 words = load_from_file('word-frequencies.txt')
 meta  = load_from_file('meta.txt')
 
-analyze_word_phrase_composition(words)
-exit(0)
-
-words = prune_data_by_percentage(words, meta, 0.5)   # Remove the lower-frequency words to improve the analysis
-
 for argument in sys.argv[1:]:
+
+	if argument.find('p') != -1:
+		analyze_word_phrase_composition(words)
+
 	if argument.find('a') != -1:
-		analyze_word_agent_percentage_composition(words)
+		pruned = prune_data_by_percentage(words, meta, 0.5)
+		analyze_word_agent_percentage_composition(pruned)
+
 	if argument.find('d') != -1:
-		analyze_word_disposition_percentage_composition(words)
+		pruned = prune_data_by_percentage(words, meta, 0.5)
+		analyze_word_disposition_percentage_composition(pruned)

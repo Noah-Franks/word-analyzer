@@ -25,7 +25,7 @@ import pickle
 #     ...
 
 # Constants
-max_phrase_length = 5
+max_phrase_length = 7
 
 
 def print_dictionary(dictionary, tabs=0):
@@ -130,13 +130,15 @@ def words_from_directory(directorypath):
     allwords = {}
 
     total_files = 68155   # I found this beforhand
-    total_done  = 0
+    total_done  = 1
 
     for root, dirs, files in os.walk(directorypath):
         for filename in files:
             
             filepath = os.path.join(root, filename)
-            print("%s / %s" % (total_done, total_files))
+            #print("\r", end="")
+            progress = int(100.0 * total_done / total_files)
+            print("\r|%s%s|" % (progress * '#', (100 - progress) * ' '), end="")
             total_done += 1
 
             filewords = words_from_file(filepath)
@@ -197,6 +199,7 @@ def meta_from_directory(directorypath):
 
 wordFrequencies = words_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
 metaData = meta_from_directory('../../Desktop/YouTube/Source/120mins/uploaded/downloaded/text-analysis-corpus/')
+print('\nWriting to files')
 write_dictionary(wordFrequencies, 'word-frequencies.txt', False)
 write_dictionary(wordFrequencies, 'word-frequencies-human.txt', True)
 write_dictionary(metaData, 'meta.txt', False)
