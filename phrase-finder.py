@@ -135,9 +135,6 @@ def analyze_word_phrase_composition(data):
 	phrases = {}
 	phrases['lengths'] = {}
 
-	common_phrases = {}
-	common_phrases['lengths'] = {}
-
 	for word in data:
 		for phrase_length in data[word]['phrases']:
 
@@ -158,11 +155,12 @@ def analyze_word_phrase_composition(data):
 				phrases['lengths'][phrase_length]['phrases'][phrase] = frequency
 				phrases['lengths'][phrase_length]['frequencies'].append(frequency)
 
-	print(phrases['lengths'][phrase_length]['frequencies'])   # These should all be integers
 
 	for phrase_length in phrases['lengths']:
 		mean = sum(phrases['lengths'][phrase_length]['frequencies']) / len(phrases['lengths'][phrase_length]['frequencies'])
 		standard_deviation = stats.pstdev(phrases['lengths'][phrase_length]['frequencies'], mean)
+
+		phrases['lengths'][phrase_length]['common'] = {}   # A phrase list of only the statistically significant
 
 		for phrase in phrases['lengths'][phrase_length]['phrases']:
 
@@ -177,6 +175,11 @@ def analyze_word_phrase_composition(data):
 				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.01, frequency, z_score))
 			elif math.fabs(z_score) > 1.960:
 				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.05, frequency, z_score))
+			else:
+				continue
+
+			phrases['lengths'][phrase_length]['common'][phrase] = frequency   # Getting here means it's statistically significant
+			
 
 
 words = load_from_file('word-frequencies.txt')
