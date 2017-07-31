@@ -8,20 +8,25 @@ import statistics as stats
 #
 # words
 #     word
-#          total frequency              The number of times a word is present in a set of files
-#          file frequency               The number of different files a word is present in
-#          agents                       The agents associated with a word
-#               agent                   The agent
-#                    frequency          The number of times a word is in a file with a given agent
+#          total frequency                    The number of times a word is present in a set of files
+#          file frequency                     The number of different files a word is present in
+#          agents                             The agents associated with a word
+#               agent                         The agent
+#                    frequency                The number of times a word is in a file with a given agent
 #               ...
-#          dispositions                 The outcomes associated with a word
-#               disposition             The choice selected by an agent
-#                    frequency          The number of times a word is in a file with a given disposition
+#          dispositions                       The outcomes associated with a word
+#               disposition                   The choice selected by an agent
+#                    frequency                The number of times a word is in a file with a given disposition
 #               ...
-#          phrases                      The phrases the word ends
+#          phrases                            The phrases the word ends
 #               phrase length
-#                    previous word      The previous words in the phrase
-#                         frequency     The number of times a word completes a phrase of a specific length
+#                    phrase root              The previous words in the phrase
+#                         total frequency     The number of times a word completes a phrase of a specific length
+#                         file frequency      The number of different files a word is present in
+#                         dispositions        The outcomes associated with a phrase
+#                              disposition    The choice selected by an agent
+#                              frequency      The number of times a phrase is in a file with a given disposition
+#                         ...
 #                    ...
 #          ...
 #     ...
@@ -39,7 +44,7 @@ def print_dictionary(dictionary, tabs=0):
 			print("\t" * tabs       + str(key))
 			print("\t" * (tabs + 1) + str(dictionary[key]))
 
-def prune_data_by_percentage(data, meta, limit_percentage):   # shortens the amount of data to work with by eliminating rare words
+def prune_data_by_word_percentage(data, meta, limit_percentage):   # shortens the amount of data to work with by eliminating rare words
 	
 	pruned_data = dict(data)
 
@@ -52,7 +57,6 @@ def prune_data_by_percentage(data, meta, limit_percentage):   # shortens the amo
 			del pruned_data[word]
 
 	return pruned_data
-
 
 def analyze_word_disposition_percentage_composition(data):
 
@@ -131,6 +135,9 @@ def analyze_word_phrase_composition(data):
 	phrases = {}
 	phrases['lengths'] = {}
 
+	common_phrases = {}
+	common_phrases['lengths'] = {}
+
 	for word in data:
 		for phrase_length in data[word]['phrases']:
 
@@ -141,7 +148,7 @@ def analyze_word_phrase_composition(data):
 
 			for root in data[word]['phrases'][phrase_length]:
 
-				frequency = words[word]['phrases'][phrase_length][root]
+				frequency = words[word]['phrases'][phrase_length][root]['total frequency']
 
 				phrase = word
 				for part in root.split():
@@ -150,6 +157,8 @@ def analyze_word_phrase_composition(data):
 
 				phrases['lengths'][phrase_length]['phrases'][phrase] = frequency
 				phrases['lengths'][phrase_length]['frequencies'].append(frequency)
+
+	print(phrases['lengths'][phrase_length]['frequencies'])   # These should all be integers
 
 	for phrase_length in phrases['lengths']:
 		mean = sum(phrases['lengths'][phrase_length]['frequencies']) / len(phrases['lengths'][phrase_length]['frequencies'])
@@ -176,12 +185,13 @@ meta  = load_from_file('meta.txt')
 for argument in sys.argv[1:]:
 
 	if argument.find('p') != -1:
-		analyze_word_phrase_composition(words)
+		pruned = prune_data_by_word_percentage(words, meta, 0.5)
+		analyze_word_phrase_composition(pruned)
 
 	if argument.find('a') != -1:
-		pruned = prune_data_by_percentage(words, meta, 0.5)
+		pruned = prune_data_by_word_percentage(words, meta, 0.5)
 		analyze_word_agent_percentage_composition(pruned)
 
 	if argument.find('d') != -1:
-		pruned = prune_data_by_percentage(words, meta, 0.5)
+		pruned = prune_data_by_word_percentage(words, meta, 0.5)
 		analyze_word_disposition_percentage_composition(pruned)

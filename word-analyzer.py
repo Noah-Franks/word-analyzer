@@ -30,7 +30,7 @@ import pickle
 #     ...
 
 # Constants
-max_phrase_length = 7
+max_phrase_length = 6
 
 
 def print_dictionary(dictionary, tabs=0):
@@ -80,9 +80,9 @@ def words_from_file(filepath):
 
 				if word not in words:
 					words[word]                    = {}
+					words[word]['dispositions']    = {}
 					words[word]['agents']          = {}
 					words[word]['phrases']         = {}
-					words[word]['dispositions']    = {}
 					words[word]['file frequency']  = 1
 					words[word]['start frequency'] = 0
 					words[word]['total frequency'] = 0
@@ -156,9 +156,9 @@ def words_from_directory(directorypath):
 
 				if word not in allwords:
 					allwords[word]                    = {}
+					allwords[word]['dispositions']    = {}
 					allwords[word]['agents']          = {}
 					allwords[word]['phrases']         = {}
-					allwords[word]['dispositions']    = {}
 					allwords[word]['file frequency']  = 0
 					allwords[word]['start frequency'] = 0
 					allwords[word]['total frequency'] = 0
@@ -186,7 +186,7 @@ def words_from_directory(directorypath):
 							allwords[word]['phrases'][root_size][phrase_root]                    = {}
 							allwords[word]['phrases'][root_size][phrase_root]['agents']          = {}
 							allwords[word]['phrases'][root_size][phrase_root]['dispositions']    = {}
-							allwords[word]['phrases'][root_size][phrase_root]['file frequency']  = 1
+							allwords[word]['phrases'][root_size][phrase_root]['file frequency']  = 0
 							allwords[word]['phrases'][root_size][phrase_root]['total frequency'] = 0
 
 						if disposition not in allwords[word]['phrases'][root_size][phrase_root]['dispositions']:
