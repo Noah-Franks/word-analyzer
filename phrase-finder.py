@@ -4,7 +4,7 @@ import pickle
 import math
 import statistics as stats
 
-# words data structure:
+# dictionary data structures:
 #
 # words
 #     word
@@ -30,6 +30,23 @@ import statistics as stats
 #                    ...
 #          ...
 #     ...
+#
+# phrases
+#     lengths                                 The number of words phrases can have
+#          phrase length                      The particular number of words phrases in this dictionary have
+#               phrases                       The potential phrases, most of which are random word groupings of rare meaning
+#                    phrase
+#                         frequency           The number of times a phrase is present in a set of files
+#                    ...
+#               common                        The phrases statistically likely to mean something
+#                    phrase
+#                         frequency           The number of times a phrase is present in a set of files
+#                    ...
+#               ...
+#               frequencies                   The list of every phrase frequency for phrases of a particular length
+#          ...
+#     ...
+
 
 
 def load_from_file(filepath):   # loads the output of word-analyzer into memory
