@@ -152,7 +152,18 @@ def analyze_word_phrase_composition(data):
 	phrases = {}
 	phrases['lengths'] = {}
 
+	total_words = len(data)   # Used for progress bar
+	total_done = 0
+	last_progress = -1   # Used to keep from reprinting equivalent progress lines
+	
 	for word in data:
+
+		progress = int(70.0 * total_done / total_words)
+		if progress != last_progress:
+			print("\rBuilding potential phrases\t|%s%s|" % (progress * '#', (70 - progress) * ' '), end="")   # A simple loading bar
+			last_progress = progress
+		total_done += 1
+
 		for phrase_length in data[word]['phrases']:
 
 			if phrase_length not in phrases['lengths']:
@@ -172,7 +183,16 @@ def analyze_word_phrase_composition(data):
 				phrases['lengths'][phrase_length]['frequencies'].append(frequency)
 
 
+	print()
+	total_phrases = 0
 	for phrase_length in phrases['lengths']:
+		total_phrases += len(phrases['lengths'][phrase_length]['phrases'])   # Used for progress bar
+	total_done = 0
+	last_progress = -1   # Used to keep from reprinting equivalent progress lines
+	
+
+	for phrase_length in phrases['lengths']:
+
 		mean = sum(phrases['lengths'][phrase_length]['frequencies']) / len(phrases['lengths'][phrase_length]['frequencies'])
 		standard_deviation = stats.pstdev(phrases['lengths'][phrase_length]['frequencies'], mean)
 
@@ -180,6 +200,12 @@ def analyze_word_phrase_composition(data):
 		phrases['lengths'][phrase_length]['common frequencies'] = []
 
 		for phrase in phrases['lengths'][phrase_length]['phrases']:
+
+			progress = int(70.0 * total_done / total_phrases)   # This block is only used for progress bar
+			if progress != last_progress:
+				print("\rAnalyzing potential phrases\t|%s%s|" % (progress * '#', (70 - progress) * ' '), end="")   # A simple loading bar
+				last_progress = progress
+			total_done += 1
 
 			frequency = phrases['lengths'][phrase_length]['phrases'][phrase]
 			z_score = (frequency - mean) / standard_deviation
@@ -258,14 +284,17 @@ def analyze_word_phrase_composition(data):
 							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.05, percentage, z_score))
 
 
-
+print("Loading words")
 words = load_from_file('word-frequencies.txt')
+print("Loading metadata")
 meta  = load_from_file('meta.txt')
 
 for argument in sys.argv[1:]:
 
 	if argument.find('p') != -1:
+		print("Pruning words")
 		pruned = prune_data_by_word_percentage(words, meta, 0.5)
+		print("Finding phrases")
 		analyze_word_phrase_composition(pruned)
 
 	if argument.find('a') != -1:
