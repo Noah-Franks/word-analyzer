@@ -8,42 +8,42 @@ import statistics as stats
 #
 # words
 #     word
-#          total frequency                    The number of times a word is present in a set of files
-#          file frequency                     The number of different files a word is present in
-#          agents                             The agents associated with a word
-#               agent                         The agent
-#                    frequency                The number of times a word is in a file with a given agent
+#          total frequency                         The number of times a word is present in a set of files
+#          file frequency                          The number of different files a word is present in
+#          agents                                  The agents associated with a word
+#               agent                              The agent
+#                    frequency                     The number of times a word is in a file with a given agent
 #               ...
-#          dispositions                       The outcomes associated with a word
-#               disposition                   The choice selected by an agent
-#                    frequency                The number of times a word is in a file with a given disposition
+#          dispositions                            The outcomes associated with a word
+#               disposition                        The choice selected by an agent
+#                    frequency                     The number of times a word is in a file with a given disposition
 #               ...
-#          phrases                            The phrases the word ends
+#          phrases                                 The phrases the word ends
 #               phrase length
-#                    phrase root              The previous words in the phrase
-#                         total frequency     The number of times a word completes a phrase of a specific length
-#                         file frequency      The number of different files a word is present in
-#                         dispositions        The outcomes associated with a phrase
-#                              disposition    The choice selected by an agent
-#                              frequency      The number of times a phrase is in a file with a given disposition
+#                    phrase root                   The previous words in the phrase
+#                         total frequency          The number of times a word completes a phrase of a specific length
+#                         file frequency           The number of different files a word is present in
+#                         dispositions             The outcomes associated with a phrase
+#                              disposition         The choice selected by an agent
+#                                   frequency      The number of times a phrase is in a file with a given disposition
 #                         ...
 #                    ...
 #          ...
 #     ...
 #
 # phrases
-#     lengths                                 The number of words phrases can have
-#          phrase length                      The particular number of words phrases in this dictionary have
-#               phrases                       The potential phrases, most of which are random word groupings of rare meaning
+#     lengths                                      The number of words phrases can have
+#          phrase length                           The particular number of words phrases in this dictionary have
+#               phrases                            The potential phrases, most of which are random word groupings of rare meaning
 #                    phrase
-#                         frequency           The number of times a phrase is present in a set of files
+#                         frequency                The number of times a phrase is present in a set of files
 #                    ...
-#               common                        The phrases statistically likely to mean something
+#               common                             The phrases statistically likely to mean something
 #                    phrase
-#                         frequency           The number of times a phrase is present in a set of files
+#                         frequency                The number of times a phrase is present in a set of files
 #                    ...
 #               ...
-#               frequencies                   The list of every phrase frequency for phrases of a particular length
+#               frequencies                        The list of every phrase frequency for phrases of a particular length
 #          ...
 #     ...
 
@@ -210,7 +210,7 @@ def analyze_word_phrase_composition(data):
 			frequency = phrases['lengths'][phrase_length]['phrases'][phrase]
 			z_score = (frequency - mean) / standard_deviation
 
-			if math.fabs(z_score) < 3.819:
+			if math.fabs(z_score) < 1.960:
 				continue
 
 			'''if math.fabs(z_score) > 3.819:
@@ -226,13 +226,31 @@ def analyze_word_phrase_composition(data):
 			phrases['lengths'][phrase_length]['common'][phrase] = frequency   # Getting here means it's statistically significant
 
 
+
 	analysis = {}
 	analysis['lengths'] = {}
 
+	total_done = 0
+	last_progress = -1
+	print()
+
 	for word in data:
+
+		progress = int(70.0 * total_done / total_words)
+		if progress != last_progress:
+			print("\rFinding Sample Statistics\t|%s%s|" % (progress * '#', (70 - progress) * ' '), end="")   # A simple loading bar
+			last_progress = progress
+		total_done += 1
+
+
 		for phrase_length in data[word]['phrases']:
 
-			analysis['lengths'][phrase_length] = {}
+			#print(phrases['lengths'][phrase_length]['common'])
+
+			if phrase_length not in analysis['lengths']:
+				analysis['lengths'][phrase_length] = {}
+				analysis['lengths'][phrase_length]['dispositions'] = {}
+
 			for root in data[word]['phrases'][phrase_length]:
 
 				phrase = word
@@ -246,20 +264,24 @@ def analyze_word_phrase_composition(data):
 
 					percentage = data[word]['phrases'][phrase_length][root]['dispositions'][disposition] / data[word]['phrases'][phrase_length][root]['total frequency']
 
-					if disposition not in analysis['lengths'][phrase_length]:
-						analysis['lengths'][phrase_length][disposition] = {}
-						analysis['lengths'][phrase_length][disposition]['values'] = []
-					analysis['lengths'][phrase_length][disposition]['values'].append(percentage)
+					if disposition not in analysis['lengths'][phrase_length]['dispositions']:
+						analysis['lengths'][phrase_length]['dispositions'][disposition] = {}
+						analysis['lengths'][phrase_length]['dispositions'][disposition]['values'] = []
+						#print(disposition)
+					analysis['lengths'][phrase_length]['dispositions'][disposition]['values'].append(percentage)
+
+	#print(analysis)
 
 	for phrase_length in analysis['lengths']:
-		for disposition in analysis['lengths'][phrase_length]:
-			mean = sum(analysis['lengths'][phrase_length][disposition]['values']) / len(analysis['lengths'][phrase_length][disposition]['values'])
-			standard_deviation = stats.pstdev(['lengths'][phrase_length][disposition]['values'], mean)
+		for disposition in analysis['lengths'][phrase_length]['dispositions']:
+			mean = sum(analysis['lengths'][phrase_length]['dispositions'][disposition]['values']) / len(analysis['lengths'][phrase_length]['dispositions'][disposition]['values'])
+			standard_deviation = stats.pstdev(analysis['lengths'][phrase_length]['dispositions'][disposition]['values'], mean)
 
-			analysis['lengths'][phrase_length][disposition]['mean'] = mean
-			analysis['lengths'][phrase_length][disposition]['standard deviation'] = standard_deviation
+			#analysis['lengths'][phrase_length]['dispositions'][disposition]['mean'] = mean
+			#analysis['lengths'][phrase_length]['dispositions'][disposition]['standard deviation'] = standard_deviation
 
 			print('%s\n\tmu: %s\n\tst: %s' % (disposition, mean * 100, standard_deviation))
+
 
 			for word in data:
 				for root in data[word]['phrases'][phrase_length]:
@@ -271,17 +293,21 @@ def analyze_word_phrase_composition(data):
 					if phrase not in phrases['lengths'][phrase_length]['common']:   # Filter out the uncommon phrases
 						continue
 
+					if disposition not in data[word]['phrases'][phrase_length][root]['dispositions']:   # Excise phrases with zero frequency for the given disposition
+						continue
+
 					if data[word]['phrases'][phrase_length][root]['dispositions'][disposition]:
 						percentage = data[word]['phrases'][phrase_length][root]['dispositions'][disposition] / data[word]['phrases'][phrase_length][root]['total frequency']
 						z_score = (percentage - mean) / standard_deviation
 						if math.fabs(z_score) > 3.819:
-							print('\t%s%s\tp < %s  \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.0001, percentage, z_score))
+							print('\t%s%s\tp < %s  \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.0001, round(percentage, 3), round(z_score, 3)))
 						elif math.fabs(z_score) > 3.291:
-							print('\t%s%s\tp < %s   \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.001, percentage, z_score))
+							print('\t%s%s\tp < %s   \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.001, round(percentage, 3), round(z_score, 3)))
 						elif math.fabs(z_score) > 2.576:
-							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.01, percentage, z_score))
+							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.01, round(percentage, 3), round(z_score, 3)))
 						elif math.fabs(z_score) > 1.960:
-							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (12 - len(phrase)), 0.05, percentage, z_score))
+							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.05, round(percentage, 3), round(z_score, 3)))
+
 
 
 print("Loading words")
