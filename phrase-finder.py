@@ -148,7 +148,6 @@ def analyze_word_agent_percentage_composition(data):
 					print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (word, ' ' * (12 - len(word)), 0.05, percentage, z_score))
 
 def analyze_word_phrase_composition(data):
-
 	phrases = {}
 	phrases['lengths'] = {}
 
@@ -213,19 +212,12 @@ def analyze_word_phrase_composition(data):
 			if math.fabs(z_score) < 1.960:
 				continue
 
-			'''if math.fabs(z_score) > 3.819:
-				print('\t%s%s\tp < %s  \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.0001, frequency, z_score))
-			elif math.fabs(z_score) > 3.291:
-				print('\t%s%s\tp < %s   \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.001, frequency, z_score))
-			elif math.fabs(z_score) > 2.576:
-				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.01, frequency, z_score))
-			elif math.fabs(z_score) > 1.960:
-				print('\t%s%s\tp < %s    \tn: %s\tz: %s' % (phrase, ' ' * (6 * phrase_length - len(phrase)), 0.05, frequency, z_score))
-			'''
-
 			phrases['lengths'][phrase_length]['common'][phrase] = frequency   # Getting here means it's statistically significant
+	return phrases
 
+def analyze_phrase_disposition_percentage_composition(data):
 
+	phrases = analyze_word_phrase_composition(data)
 
 	analysis = {}
 	analysis['lengths'] = {}
@@ -308,6 +300,81 @@ def analyze_word_phrase_composition(data):
 						elif math.fabs(z_score) > 1.960:
 							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.05, round(percentage, 3), round(z_score, 3)))
 
+def analyze_phrase_agent_percentage_composition(data):
+
+	phrases = analyze_word_phrase_composition(data)
+
+	analysis = {}
+	analysis['lengths'] = {}
+
+	total_done = 0
+	last_progress = -1
+	print()
+
+	for word in data:
+
+		progress = int(70.0 * total_done / total_words)
+		if progress != last_progress:
+			print("\rFinding Sample Statistics\t|%s%s|" % (progress * '#', (70 - progress) * ' '), end="")   # A simple loading bar
+			last_progress = progress
+		total_done += 1
+
+
+		for phrase_length in data[word]['phrases']:
+
+			if phrase_length not in analysis['lengths']:
+				analysis['lengths'][phrase_length] = {}
+				analysis['lengths'][phrase_length]['agent'] = {}
+
+			for root in data[word]['phrases'][phrase_length]:
+
+				phrase = word
+				for part in root.split():
+					phrase = "%s %s" % (part, phrase)
+
+				if phrase not in phrases['lengths'][phrase_length]['common']:   # Filter out the uncommon phrases
+					continue
+
+				for agent in data[word]['phrases'][phrase_length][root]['agents']:
+
+					percentage = data[word]['phrases'][phrase_length][root]['agents'][agent] / data[word]['phrases'][phrase_length][root]['total frequency']
+
+					if agent not in analysis['lengths'][phrase_length]['agents']:
+						analysis['lengths'][phrase_length]['agents'][agent] = {}
+						analysis['lengths'][phrase_length]['agents'][agent]['values'] = []
+					analysis['lengths'][phrase_length]['agents'][agent]['values'].append(percentage)
+
+	for phrase_length in analysis['lengths']:
+		for agent in analysis['lengths'][phrase_length]['agents']:
+			mean = sum(analysis['lengths'][phrase_length]['agents'][agent]['values']) / len(analysis['lengths'][phrase_length]['agents'][agent]['values'])
+			standard_deviation = stats.pstdev(analysis['lengths'][phrase_length]['agents'][agent]['values'], mean)
+
+			print('%s\n\tmu: %s\n\tst: %s' % (agent, mean * 100, standard_deviation))
+
+			for word in data:
+				for root in data[word]['phrases'][phrase_length]:
+
+					phrase = word
+					for part in root.split():
+						phrase = "%s %s" % (part, phrase)
+
+					if phrase not in phrases['lengths'][phrase_length]['common']:   # Filter out the uncommon phrases
+						continue
+
+					if agent not in data[word]['phrases'][phrase_length][root]['agents']:   # Excise phrases with zero frequency for the given agent
+						continue
+
+					if data[word]['phrases'][phrase_length][root]['agents'][agent]:
+						percentage = data[word]['phrases'][phrase_length][root]['agents'][agent] / data[word]['phrases'][phrase_length][root]['total frequency']
+						z_score = (percentage - mean) / standard_deviation
+						if math.fabs(z_score) > 3.819:
+							print('\t%s%s\tp < %s  \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.0001, round(percentage, 3), round(z_score, 3)))
+						elif math.fabs(z_score) > 3.291:
+							print('\t%s%s\tp < %s   \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.001, round(percentage, 3), round(z_score, 3)))
+						elif math.fabs(z_score) > 2.576:
+							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.01, round(percentage, 3), round(z_score, 3)))
+						elif math.fabs(z_score) > 1.960:
+							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.05, round(percentage, 3), round(z_score, 3)))
 
 
 print("Loading words")
