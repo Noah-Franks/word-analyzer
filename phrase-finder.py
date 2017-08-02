@@ -274,7 +274,6 @@ def analyze_phrase_disposition_percentage_composition(data):
 
 			print('%s\n\tmu: %s\n\tst: %s' % (disposition, mean * 100, standard_deviation))
 
-
 			for word in data:
 				for root in data[word]['phrases'][phrase_length]:
 
@@ -377,9 +376,9 @@ def analyze_phrase_agent_percentage_composition(data):
 							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.05, round(percentage, 3), round(z_score, 3)))
 
 
-print("Loading words")
+#print("Loading words")
 words = load_from_file('word-frequencies.txt')
-print("Loading metadata")
+#print("Loading metadata")
 meta  = load_from_file('meta.txt')
 
 for argument in sys.argv[1:]:

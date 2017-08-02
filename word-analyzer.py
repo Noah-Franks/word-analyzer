@@ -2,28 +2,31 @@ import os
 import re as re
 import pickle
 
-# words data structure:
+# dictionary data structures:
 #
 # words
 #     word
-#          total frequency                    The number of times a word is present in a set of files
-#          file frequency                     The number of different files a word is present in
-#          agents                             The agents associated with a word
-#               agent                         The agent
-#                    frequency                The number of times a word is in a file with a given agent
+#          total frequency                         The number of times a word is present in a set of files
+#          file frequency                          The number of different files a word is present in
+#          agents                                  The agents associated with a word
+#               agent                              The agent
+#                    frequency                     The number of times a word is in a file with a given agent
 #               ...
-#          dispositions                       The outcomes associated with a word
-#               disposition                   The choice selected by an agent
-#                    frequency                The number of times a word is in a file with a given disposition
+#          dispositions                            The outcomes associated with a word
+#               disposition                        The choice selected by an agent
+#                    frequency                     The number of times a word is in a file with a given disposition
 #               ...
-#          phrases                            The phrases the word ends
+#          phrases                                 The phrases the word ends
 #               phrase length
-#                    phrase root              The previous words in the phrase
-#                         total frequency     The number of times a word completes a phrase of a specific length
-#                         file frequency      The number of different files a word is present in
-#                         dispositions        The outcomes associated with a phrase
-#                              disposition    The choice selected by an agent
-#                              frequency      The number of times a phrase is in a file with a given disposition
+#                    phrase root                   The previous words in the phrase
+#                         total frequency          The number of times a word completes a phrase of a specific length
+#                         file frequency           The number of different files a word is present in
+#                         dispositions             The outcomes associated with a phrase
+#                              disposition         The choice selected by an agent
+#                                   frequency      The number of times a phrase is in a file with a given disposition
+#                         agents                   The agents associated with the phrase
+#                              agent
+#                                   frequency      The number of times a phrase is in a file with a given agent
 #                         ...
 #                    ...
 #          ...
