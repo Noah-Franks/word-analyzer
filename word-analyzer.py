@@ -24,16 +24,17 @@ import pickle
 #                         dispositions             The outcomes associated with a phrase
 #                              disposition         The choice selected by an agent
 #                                   frequency      The number of times a phrase is in a file with a given disposition
+#                              ...
 #                         agents                   The agents associated with the phrase
 #                              agent
 #                                   frequency      The number of times a phrase is in a file with a given agent
-#                         ...
+#                              ...
 #                    ...
 #          ...
 #     ...
 
 # Constants
-max_phrase_length = 6
+max_phrase_length = 6   # This describes the max root for the phrase length, meaning "6" indicates a maximum phrase length of 7 words
 
 
 def print_dictionary(dictionary, tabs=0):
@@ -50,6 +51,9 @@ def write_dictionary(dictionary, path, formatted=True):
 	if not formatted:
 		pickle.dump(dictionary, open(path, 'wb'), -1)
 		return
+
+
+	# If formatted is set to True, the file will instead be serialized using human readable formatting
 
 	def dictToString(dictionary, spaces=0):
 		writeString = ''
@@ -71,7 +75,7 @@ def write_dictionary(dictionary, path, formatted=True):
 def words_from_file(filepath):
 	words = {}   # All of the unique words. Has the form {word -> [(disposition, frequency),...]}
 
-	disposition = filepath[filepath.find('_as_') + 4 : filepath.find('.txt')]
+	disposition = filepath[filepath.find('_as_') + 4 : filepath.find('.txt')]   # Extracts the disposition using the formatting provided from M3
 	agent       = filepath[filepath.find('_by_') + 4 : filepath.find('_as_')]
 
 	with open(filepath, 'r') as file:
@@ -93,7 +97,7 @@ def words_from_file(filepath):
 					for i in range(max_phrase_length):
 						words[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
-				phrase_roots = []
+				phrase_roots = []   # A root includes all of the words previous to the word ending the phrase
 				for part in last_words:
 					for i in range(len(phrase_roots)):
 						phrase_roots[i] = "%s %s" % (phrase_roots[i], part)   # Phrases are built backwards

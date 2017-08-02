@@ -4,6 +4,7 @@ import pickle
 import math
 import statistics as stats
 
+
 # dictionary data structures:
 #
 # words
@@ -26,9 +27,13 @@ import statistics as stats
 #                         dispositions             The outcomes associated with a phrase
 #                              disposition         The choice selected by an agent
 #                                   frequency      The number of times a phrase is in a file with a given disposition
-#                         ...
+#                              ...
+#                         agents                   The agents associated with the phrase
+#                              agent
+#                                   frequency      The number of times a phrase is in a file with a given agent
+#                              ...
 #                    ...
-#          ...
+#               ...
 #     ...
 #
 # phrases
@@ -45,7 +50,7 @@ import statistics as stats
 #               ...
 #               frequencies                        The list of every phrase frequency for phrases of a particular length
 #          ...
-#     ...
+
 
 
 
@@ -176,11 +181,10 @@ def analyze_word_phrase_composition(data):
 
 				phrase = word
 				for part in root.split():
-					phrase = "%s %s" % (part, phrase)
+					phrase = "%s %s" % (part, phrase)   # Reverses the order of the words since phrases are built backwards
 
 				phrases['lengths'][phrase_length]['phrases'][phrase] = frequency
 				phrases['lengths'][phrase_length]['frequencies'].append(frequency)
-
 
 	print()
 	total_phrases = 0
@@ -188,7 +192,7 @@ def analyze_word_phrase_composition(data):
 		total_phrases += len(phrases['lengths'][phrase_length]['phrases'])   # Used for progress bar
 	total_done = 0
 	last_progress = -1   # Used to keep from reprinting equivalent progress lines
-	
+
 
 	for phrase_length in phrases['lengths']:
 
@@ -213,6 +217,7 @@ def analyze_word_phrase_composition(data):
 				continue
 
 			phrases['lengths'][phrase_length]['common'][phrase] = frequency   # Getting here means it's statistically significant
+	
 	return phrases
 
 def analyze_phrase_disposition_percentage_composition(data):
@@ -222,6 +227,7 @@ def analyze_phrase_disposition_percentage_composition(data):
 	analysis = {}
 	analysis['lengths'] = {}
 
+	total_words = len(data)   # Used for progress bar
 	total_done = 0
 	last_progress = -1
 	print()
@@ -269,9 +275,6 @@ def analyze_phrase_disposition_percentage_composition(data):
 			mean = sum(analysis['lengths'][phrase_length]['dispositions'][disposition]['values']) / len(analysis['lengths'][phrase_length]['dispositions'][disposition]['values'])
 			standard_deviation = stats.pstdev(analysis['lengths'][phrase_length]['dispositions'][disposition]['values'], mean)
 
-			#analysis['lengths'][phrase_length]['dispositions'][disposition]['mean'] = mean
-			#analysis['lengths'][phrase_length]['dispositions'][disposition]['standard deviation'] = standard_deviation
-
 			print('%s\n\tmu: %s\n\tst: %s' % (disposition, mean * 100, standard_deviation))
 
 			for word in data:
@@ -306,6 +309,7 @@ def analyze_phrase_agent_percentage_composition(data):
 	analysis = {}
 	analysis['lengths'] = {}
 
+	total_words = len(data)   # Used for progress bar
 	total_done = 0
 	last_progress = -1
 	print()
@@ -323,7 +327,7 @@ def analyze_phrase_agent_percentage_composition(data):
 
 			if phrase_length not in analysis['lengths']:
 				analysis['lengths'][phrase_length] = {}
-				analysis['lengths'][phrase_length]['agent'] = {}
+				analysis['lengths'][phrase_length]['agents'] = {}
 
 			for root in data[word]['phrases'][phrase_length]:
 
@@ -347,6 +351,10 @@ def analyze_phrase_agent_percentage_composition(data):
 		for agent in analysis['lengths'][phrase_length]['agents']:
 			mean = sum(analysis['lengths'][phrase_length]['agents'][agent]['values']) / len(analysis['lengths'][phrase_length]['agents'][agent]['values'])
 			standard_deviation = stats.pstdev(analysis['lengths'][phrase_length]['agents'][agent]['values'], mean)
+
+			if standard_deviation == 0:
+				print('There is not enough information on %s\' speach patterns to perform a satisfactory analysis' % (agent))
+				continue
 
 			print('%s\n\tmu: %s\n\tst: %s' % (agent, mean * 100, standard_deviation))
 
@@ -387,7 +395,8 @@ for argument in sys.argv[1:]:
 		print("Pruning words")
 		pruned = prune_data_by_word_percentage(words, meta, 0.5)
 		print("Finding phrases")
-		analyze_word_phrase_composition(pruned)
+		#analyze_phrase_disposition_percentage_composition(pruned)
+		analyze_phrase_agent_percentage_composition(pruned)
 
 	if argument.find('a') != -1:
 		pruned = prune_data_by_word_percentage(words, meta, 0.5)
