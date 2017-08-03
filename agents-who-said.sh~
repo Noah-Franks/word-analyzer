@@ -20,7 +20,7 @@ while read line; do
 			selected="$selected|$speaker"
 		fi
 	fi
-done < results/agent\ profiles\ by\ words.txt 
+done < agent-profiles.txt
 
 echo "\tPositive: $selected"
 
