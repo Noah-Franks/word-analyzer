@@ -57,11 +57,11 @@ import statistics as stats
 def load_from_file(filepath):   # loads the output of word-analyzer into memory
 	return pickle.load(open(filepath, "rb"))
 
-def print_dictionary(dictionary, tabs=0):
+def print_dictionary(dictionary, tabs=0):   # A recursive way of printing a dictionary in human-readable format
 	for key in dictionary:
 		if isinstance(dictionary[key], dict):
 			print("\t" * tabs + str(key))
-			print_dictionary(dictionary[key], tabs + 1)
+			print_dictionary(dictionary[key], tabs + 1)   # Recursion is it's own reward
 		else:
 			print("\t" * tabs       + str(key))
 			print("\t" * (tabs + 1) + str(dictionary[key]))
@@ -99,7 +99,7 @@ def analyze_word_disposition_percentage_composition(data):
 		standard_deviation = stats.pstdev(analysis[disposition]['values'], mean)
 
 		analysis[disposition]['mean'] = mean
-		analysis[disposition]['standard deviation'] = standard_deviation
+		analysis[disposition]['standard deviation'] = standard_deviation   # these two aren't used via this dictionary, but were kept in case we want them in the future
 
 		print('%s\n\tmu: %s\n\tst: %s' % (disposition, mean * 100, standard_deviation))
 
@@ -168,14 +168,14 @@ def analyze_word_phrase_composition(data):
 			last_progress = progress
 		total_done += 1
 
-		for phrase_length in data[word]['phrases']:
+		for phrase_length in data[word]['phrases']:   # Phrases can be of different lengths, but do note that a phrase_length of 3 consists of 4 words since the length is of the root, not the total phrase
 
 			if phrase_length not in phrases['lengths']:
 				phrases['lengths'][phrase_length] = {}
 				phrases['lengths'][phrase_length]['phrases'] = {}       # Phrases paired with frequencies
 				phrases['lengths'][phrase_length]['frequencies'] = []   # List of frequencies used for statistics
 
-			for root in data[word]['phrases'][phrase_length]:
+			for root in data[word]['phrases'][phrase_length]:   # A root consists of the words that make up a phrase before the word in question
 
 				frequency = words[word]['phrases'][phrase_length][root]['total frequency']
 
@@ -243,17 +243,15 @@ def analyze_phrase_disposition_percentage_composition(data):
 
 		for phrase_length in data[word]['phrases']:
 
-			#print(phrases['lengths'][phrase_length]['common'])
-
-			if phrase_length not in analysis['lengths']:
+			if phrase_length not in analysis['lengths']:   # Phrases can be of different lengths, but do note that a phrase_length of 3 consists of 4 words since the length is of the root, not the total phrase
 				analysis['lengths'][phrase_length] = {}
 				analysis['lengths'][phrase_length]['dispositions'] = {}
 
-			for root in data[word]['phrases'][phrase_length]:
+			for root in data[word]['phrases'][phrase_length]:    # A root consists of the words that make up a phrase before the word in question
 
 				phrase = word
 				for part in root.split():
-					phrase = "%s %s" % (part, phrase)
+					phrase = "%s %s" % (part, phrase)   # Phrases are built backwards, so this reverses them
 
 				if phrase not in phrases['lengths'][phrase_length]['common']:   # Filter out the uncommon phrases
 					continue
@@ -265,10 +263,7 @@ def analyze_phrase_disposition_percentage_composition(data):
 					if disposition not in analysis['lengths'][phrase_length]['dispositions']:
 						analysis['lengths'][phrase_length]['dispositions'][disposition] = {}
 						analysis['lengths'][phrase_length]['dispositions'][disposition]['values'] = []
-						#print(disposition)
-					analysis['lengths'][phrase_length]['dispositions'][disposition]['values'].append(percentage)
-
-	#print(analysis)
+					analysis['lengths'][phrase_length]['dispositions'][disposition]['values'].append(percentage)   # Collecting all percentages now so we can calculate stats next loop
 
 	for phrase_length in analysis['lengths']:
 		for disposition in analysis['lengths'][phrase_length]['dispositions']:
@@ -323,17 +318,17 @@ def analyze_phrase_agent_percentage_composition(data):
 		total_done += 1
 
 
-		for phrase_length in data[word]['phrases']:
+		for phrase_length in data[word]['phrases']:   # Phrases can be of different lengths, but do note that a phrase_length of 3 consists of 4 words since the length is of the root, not the total phrase
 
 			if phrase_length not in analysis['lengths']:
 				analysis['lengths'][phrase_length] = {}
 				analysis['lengths'][phrase_length]['agents'] = {}
 
-			for root in data[word]['phrases'][phrase_length]:
+			for root in data[word]['phrases'][phrase_length]:   # A root consists of the words that make up a phrase before the word in question
 
 				phrase = word
 				for part in root.split():
-					phrase = "%s %s" % (part, phrase)
+					phrase = "%s %s" % (part, phrase)   # Phrases are built backwards, so this reverses them.
 
 				if phrase not in phrases['lengths'][phrase_length]['common']:   # Filter out the uncommon phrases
 					continue
@@ -345,7 +340,7 @@ def analyze_phrase_agent_percentage_composition(data):
 					if agent not in analysis['lengths'][phrase_length]['agents']:
 						analysis['lengths'][phrase_length]['agents'][agent] = {}
 						analysis['lengths'][phrase_length]['agents'][agent]['values'] = []
-					analysis['lengths'][phrase_length]['agents'][agent]['values'].append(percentage)
+					analysis['lengths'][phrase_length]['agents'][agent]['values'].append(percentage)   # Get every percentage in order to do statistics
 
 	for phrase_length in analysis['lengths']:
 		for agent in analysis['lengths'][phrase_length]['agents']:
@@ -353,7 +348,7 @@ def analyze_phrase_agent_percentage_composition(data):
 			standard_deviation = stats.pstdev(analysis['lengths'][phrase_length]['agents'][agent]['values'], mean)
 
 			if standard_deviation == 0:
-				print('There is not enough information on %s\' speach patterns to perform a satisfactory analysis' % (agent))
+				print('There is not enough information on %s\'s speach patterns to perform a satisfactory analysis' % (agent))
 				continue
 
 			print('%s\n\tmu: %s\n\tst: %s' % (agent, mean * 100, standard_deviation))
@@ -384,24 +379,24 @@ def analyze_phrase_agent_percentage_composition(data):
 							print('\t%s%s\tp < %s    \t%%: %s\tz: %s' % (phrase, ' ' * (8 * phrase_length - len(phrase)), 0.05, round(percentage, 3), round(z_score, 3)))
 
 
-#print("Loading words")
+print("Loading words")
 words = load_from_file('word-frequencies.txt')
-#print("Loading metadata")
+print("Loading metadata")
 meta  = load_from_file('meta.txt')
 
-for argument in sys.argv[1:]:
+for argument in sys.argv[1:]:   # Rudimentary flag parser
 
-	if argument.find('p') != -1:
+	if argument.find('p') != -1:                                   # Performs a phrase analysis on dispositions or agents
 		print("Pruning words")
 		pruned = prune_data_by_word_percentage(words, meta, 0.5)
 		print("Finding phrases")
 		#analyze_phrase_disposition_percentage_composition(pruned)
 		analyze_phrase_agent_percentage_composition(pruned)
 
-	if argument.find('a') != -1:
+	if argument.find('a') != -1:                                   # Performs an agent analysis on words
 		pruned = prune_data_by_word_percentage(words, meta, 0.5)
 		analyze_word_agent_percentage_composition(pruned)
 
-	if argument.find('d') != -1:
+	if argument.find('d') != -1:                                   # Performs a disposition analysis on words
 		pruned = prune_data_by_word_percentage(words, meta, 0.5)
 		analyze_word_disposition_percentage_composition(pruned)

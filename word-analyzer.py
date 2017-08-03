@@ -1,5 +1,5 @@
 import os
-import re as re
+import re as re   # re2 could be used instead here, provided the right environment. This would improve performance.
 import pickle
 
 # dictionary data structures:
@@ -30,18 +30,18 @@ import pickle
 #                                   frequency      The number of times a phrase is in a file with a given agent
 #                              ...
 #                    ...
-#          ...
+#               ...
 #     ...
 
 # Constants
 max_phrase_length = 6   # This describes the max root for the phrase length, meaning "6" indicates a maximum phrase length of 7 words
 
 
-def print_dictionary(dictionary, tabs=0):
+def print_dictionary(dictionary, tabs=0):   # A recursive way of printing a dictionary in human-readable format
 	for key in dictionary:
 		if isinstance(dictionary[key], dict):
 			print("\t" * tabs + str(key))
-			print_dictionary(dictionary[key], tabs + 1)
+			print_dictionary(dictionary[key], tabs + 1)   # Recursion is it's own reward
 		else:
 			print("\t" * tabs       + str(key))
 			print("\t" * (tabs + 1) + str(dictionary[key]))
@@ -152,14 +152,13 @@ def words_from_directory(directorypath):
 		for filename in files:
 			
 			filepath = os.path.join(root, filename)
-			#print("\r", end="")
 			progress = int(100.0 * total_done / total_files)
 			print("\r|%s%s|" % (progress * '#', (100 - progress) * ' '), end="")   # A simple loading bar
 			total_done += 1
 
 			filewords = words_from_file(filepath)
 			
-			for word, meta_dict in filewords.items():
+			for word, meta_dict in filewords.items():   # This is a really bad way to do this. I learned how to use dictionaries while writing this, so my bad.
 
 				if word not in allwords:
 					allwords[word]                    = {}
@@ -172,19 +171,19 @@ def words_from_directory(directorypath):
 					for i in range(max_phrase_length):
 						allwords[word]['phrases'][i + 1] = {}   # Separate phrases based on length
 
-				for disposition, frequency in meta_dict['dispositions'].items():
+				for disposition, frequency in meta_dict['dispositions'].items():   # Again, poor form
 
 					if disposition not in allwords[word]['dispositions']:
 						allwords[word]['dispositions'][disposition] = 0
 				
-					allwords[word]['dispositions'][disposition] += frequency
+					allwords[word]['dispositions'][disposition] += frequency       # Add the number of times the word is associated with the disposition from the file
 
 				for agent, frequency in meta_dict['agents'].items():
 
 					if agent not in allwords[word]['agents']:
 						allwords[word]['agents'][agent] = 0
 
-					allwords[word]['agents'][agent] += frequency
+					allwords[word]['agents'][agent] += frequency                   # Add the number of times the word is associated with the agent from the file
 
 				for root_size in filewords[word]['phrases']:
 					for phrase_root in filewords[word]['phrases'][root_size]:
